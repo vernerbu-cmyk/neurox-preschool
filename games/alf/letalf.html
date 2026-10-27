@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Запрещённый символ</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f4f6fb;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            background: #1E3F8A;
+            color: #fff;
+            text-align: center;
+            padding: 18px;
+            font-size: 30px;
+            font-style: italic;
+        }
+
+        .container {
+            max-width: 820px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 22px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, .15);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        select {
+            padding: 12px 16px;
+            font-size: 20px;
+            border-radius: 12px;
+            border: 2px solid #ddd;
+        }
+
+        button {
+            background: #FF6A00;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #c34d00;
+        }
+
+        button:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        #rule {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 25px 0;
+            font-size: 24px;
+        }
+
+        #target {
+            color: #FF6A00;
+            font-size: 54px;
+            font-weight: bold;
+        }
+
+        /* === Контейнер символа === */
+        #symbol {
+            position: relative;
+            height: 220px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 120px;
+            font-weight: bold;
+            color: #1E3F8A;
+            user-select: none;
+            cursor: pointer;
+            transition: color .15s, transform .15s, opacity .2s, filter .2s;
+        }
+
+        /* Внутренний span — на него вешаем анимацию смены */
+        #symbolText {
+            display: inline-block;
+            will-change: transform, opacity;
+        }
+
+        @keyframes swapIn {
+            0% {
+                transform: scale(0.25) rotate(-8deg);
+                opacity: 0;
+            }
+            55% {
+                transform: scale(1.1) rotate(2deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        #symbolText.swap {
+            animation: swapIn 0.3s cubic-bezier(.34,1.56,.64,1);
+        }
+
+        #symbol.good {
+            color: #3bb54a;
+            transform: scale(1.1);
+        }
+
+        #symbol.bad {
+            color: #ff4040;
+            transform: scale(.92);
+        }
+
+        /* Пауза — символ притухает */
+        #symbol.paused {
+            opacity: .25;
+            filter: grayscale(.8);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 80px;
+            margin-top: 20px;
+            font-size: 22px;
+        }
+
+        .speed {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .speed input {
+            width: 300px;
+        }
+
+        .speedLabels {
+            display: flex;
+            justify-content: space-between;
+            width: 300px;
+            margin: 8px auto 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        #progress {
+            margin-top: 15px;
+            text-align: center;
+            color: #888;
+            font-size: 16px;
+            min-height: 22px;
+        }
+
+        #progress .pauseMark {
+            color: #FF6A00;
+            font-weight: bold;
+        }
+
+        .hint {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .hint kbd {
+            background: #eef1f8;
+            border: 1px solid #ccd3e0;
+            border-bottom-width: 2px;
+            border-radius: 5px;
+            padding: 1px 6px;
+            font-family: Consolas, monospace;
+            color: #444;
+        }
+
+        footer {
+            margin: 25px;
+            text-align: right;
+            color: #888;
+            font-size: 12px;
+        }
+
+        @media(max-width:700px) {
+            .card { padding: 18px; }
+
+            #symbol {
+                font-size: 95px;
+                height: 180px;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .speed input,
+            .speedLabels { width: 100%; }
+
+            button,
+            select { width: 100%; }
+        }
+
+        .controls select, .controls button { min-height: 48px; }
+        .series-size { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; margin-top:16px; color:#41556f; font-size:16px; font-weight:700; }
+        .series-size select { font-size:16px; padding:9px 12px; }
+        .instruction { text-align:center; color:#475b7b; font-size:16px; font-weight:700; line-height:1.4; margin-top:10px; }
+        #symbol { border-radius:18px; min-width:100%; touch-action:manipulation; outline-offset:4px; }
+        #symbol:focus-visible { outline:3px solid #ff6a00; }
+        #symbol:not(.paused)[data-playing="true"]:active { background:#f7faff; }
+        #symbol.paused { opacity:1; filter:none; background:#eef2f7; }
+        #symbol.paused #symbolText { opacity:0; }
+        .action-row { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; margin:12px auto 0; }
+        .action-row button { font-size:17px; padding:12px 19px; }
+        .action-row button.secondary { background:#eaf1fd; color:#1e3f8a; box-shadow:0 3px 0 #c5d2ea; }
+        .action-row button.secondary:disabled { opacity:.5; cursor:default; }
+        button:focus-visible, select:focus-visible, input:focus-visible { outline:3px solid #ff6a00; outline-offset:3px; }
+        .stats { gap:18px; margin-top:14px; flex-wrap:wrap; font-size:18px; }
+        .stats > div { background:#f4f6fb; padding:10px 16px; border-radius:12px; min-width:128px; text-align:center; }
+        .stats span { display:block; font-size:28px; font-weight:bold; color:#1e3f8a; margin-top:3px; }
+        #progress { color:#41556f; font-weight:700; }
+        .finish-box { margin-top:16px; background:#f2f7ff; border:1px solid #dce7ff; padding:18px; border-radius:16px; color:#1e3f8a; text-align:center; line-height:1.55; }
+        .finish-box strong { font-size:20px; }
+        .finish-box[hidden] { display:none !important; }
+        .finish-box small { color:#526786; }
+        @media (prefers-reduced-motion: reduce) {
+            #symbol, #symbolText { animation:none !important; transition:none !important; }
+        }
+        @media(max-width:700px) {
+          .container { padding:12px; }
+          .card { padding:16px; }
+          .controls { gap:10px; }
+          .controls select { font-size:17px; }
+          .series-size select { width:auto; }
+          #symbol { height:170px; font-size:94px; }
+          .stats { flex-direction:row; gap:8px; }
+          .stats > div { min-width:0; flex:1 1 28%; padding:9px 5px; font-size:13px; }
+          .stats span { font-size:24px; }
+          .action-row button { width:auto; flex:1 1 130px; font-size:16px; }
+          header { font-size:24px; padding:15px; }
+          .hint { line-height:1.6; }
+        }
+    </style>
+<link rel="stylesheet" href="../../assets/menu-drawer.css">
+</head>
+
+<body>
+
+    <header>
+        Запрещённый символ
+    </header>
+
+    <div class="container">
+
+        <div class="card">
+
+            <div class="controls">
+
+                <select id="targetSelect"></select>
+
+                <button id="startBtn">Старт</button>
+
+            </div>
+            <div class="series-size">
+                <label for="seriesLength">Символов за игру:</label>
+                <select id="seriesLength" aria-label="Количество символов за игру">
+                  <option value="20">20</option>
+                  <option value="40" selected>40</option>
+                  <option value="60">60</option>
+                </select>
+            </div>
+            <div class="instruction">Нажимай на большую букву, только когда она совпадает с целью.</div>
+
+            <div id="rule">
+                Цель
+                <div id="target">—</div>
+            </div>
+
+            <div id="symbol" role="button" tabindex="0" aria-label="Нажать, когда появилась нужная буква">
+                <span id="symbolText">—</span>
+            </div>
+            <div class="action-row">
+                <button id="pauseBtn" class="secondary" disabled>Пауза</button>
+                <button id="finishBtn" class="secondary" disabled>Завершить</button>
+            </div>
+
+            <div class="stats">
+              <div>Найдено:<span id="good">0</span></div>
+              <div>Пропущено:<span id="missed">0</span></div>
+              <div>Лишних нажатий:<span id="falsePress">0</span></div>
+            </div><div id="progress" aria-live="polite"></div>
+            <div class="finish-box" id="finishBox" hidden aria-live="polite"></div>
+
+            <div class="speed">
+
+                <input type="range" id="speed" min="1" max="12" value="7" aria-label="Скорость смены символов">
+
+                <div class="speedLabels">
+                    <span>Медленно</span>
+                    <span>Быстро</span>
+                </div>
+                <div id="speedValue" aria-live="polite" style="margin-top:8px;font-size:15px;color:#526786;font-weight:700;">0,9 секунды на символ</div>
+
+            </div>
+
+            <div class="hint">
+                <kbd>Пробел</kbd> — пауза / продолжить · <kbd>Enter</kbd> — выбрать букву (ПК)
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer>
+        © verner
+    </footer>
+
+    <script>
+      /* Запрещённый символ: исходная игровая механика сохранена. */
+      const SIMILAR = {
+        "А": ["Д", "Л", "М", "П"], "Б": ["В", "Ь", "Ъ", "Ы"], "В": ["Б", "Ь", "Ы", "З"],
+        "Г": ["Т", "П", "Р"], "Д": ["А", "Л", "Ц"], "Е": ["Ё", "З", "С", "Э"],
+        "Ё": ["Е", "Ж", "З"], "Ж": ["Х", "К", "Ё"], "З": ["В", "Е", "Э"],
+        "И": ["Н", "М", "Й", "П"], "Й": ["И", "Н", "М"], "К": ["Ж", "Х", "Я"],
+        "Л": ["А", "Д", "П", "И"], "М": ["Н", "И", "Ш", "Л", "А"], "Н": ["М", "И", "П", "Ч"],
+        "О": ["С", "Э", "Ю", "Ф"], "П": ["Н", "И", "Л", "Т", "Г"], "Р": ["Г", "Ь", "Ф", "Я"],
+        "С": ["О", "Э", "Е"], "Т": ["Г", "П"], "У": ["Ч", "Х"], "Ф": ["О", "Ю", "Р"],
+        "Х": ["Ж", "К", "У"], "Ц": ["Щ", "Ш", "Ч"], "Ч": ["У", "Н", "Ц"],
+        "Ш": ["Щ", "Ц", "И", "М"], "Щ": ["Ш", "Ц", "И"], "Ъ": ["Ь", "Б", "Ы"],
+        "Ы": ["Ь", "В", "Б"], "Ь": ["Ъ", "Ы", "В", "Б"], "Э": ["З", "С", "Е", "О"],
+        "Ю": ["О", "Ф", "Н"], "Я": ["Р", "К", "В"]
+      };
+      const STORAGE_KEY = 'neurox_forbidden_symbol_settings_v2';
+      /* Две более спокойные скорости добавлены; первоначальные десять сохранены. */
+      const SPEED_TABLE = [2500, 2000, 1500, 1300, 1150, 1000, 900, 800, 700, 600, 500, 400];
+      const $ = id => document.getElementById(id);
+      const symbolEl = $('symbol');
+      const symbolTextEl = $('symbolText');
+      const targetEl = $('target');
+      const selectEl = $('targetSelect');
+      const startBtn = $('startBtn');
+      const pauseBtn = $('pauseBtn');
+      const finishBtn = $('finishBtn');
+      const speedEl = $('speed');
+      const speedValueEl = $('speedValue');
+      const seriesLengthEl = $('seriesLength');
+      const goodEl = $('good');
+      const missedEl = $('missed');
+      const falsePressEl = $('falsePress');
+      const progressEl = $('progress');
+      const finishBox = $('finishBox');
+
+      let series = [];
+      let index = 0;
+      let timer = null;
+      let flashTimer = null;
+      let speed = SPEED_TABLE[6];
+      let remaining = speed;
+      let deadline = 0;
+      let good = 0;
+      let missed = 0;
+      let falsePress = 0;
+      let currentTarget = '';
+      let isTargetStimulus = false;
+      let answered = false;
+      let playing = false;
+      let paused = false;
+      let currentSession = 0;
+
+      function shuffle(arr){
+        const a = arr.slice();
+        for(let i=a.length-1;i>0;i--){
+          const j=Math.floor(Math.random()*(i+1));
+          [a[i],a[j]]=[a[j],a[i]];
+        }
+        return a;
+      }
+      function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+      function fillSelect(){
+        selectEl.innerHTML = '';
+        const auto = document.createElement('option');
+        auto.value = ''; auto.textContent = 'Случайная буква';
+        selectEl.appendChild(auto);
+        Object.keys(SIMILAR).forEach(letter=>{
+          const opt = document.createElement('option');
+          opt.value = letter; opt.textContent = letter;
+          selectEl.appendChild(opt);
+        });
+      }
+      function updateSpeedLabel(){
+        const sec = (speed/1000).toFixed(1).replace('.', ',');
+        speedValueEl.textContent = sec + ' с на символ';
+      }
+      function saveSettings(){
+        try{
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            target:selectEl.value, speedStep:Number(speedEl.value), length:Number(seriesLengthEl.value)
+          }));
+        }catch(e){}
+      }
+      function loadSettings(){
+        try{
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if(!raw) return;
+          const s = JSON.parse(raw);
+          if(typeof s.target === 'string' && (s.target === '' || SIMILAR[s.target])) selectEl.value=s.target;
+          if(Number.isInteger(s.speedStep) && s.speedStep>=1 && s.speedStep<=SPEED_TABLE.length) speedEl.value=String(s.speedStep);
+          if([20,40,60].includes(s.length)) seriesLengthEl.value=String(s.length);
+        }catch(e){}
+      }
+      function buildSeries(target){
+        const letters = Object.keys(SIMILAR);
+        const similars = SIMILAR[target].filter(l => l !== target);
+        const rest = letters.filter(l=>l!==target && !similars.includes(l));
+        const total = Number(seriesLengthEl.value);
+        const targets = Math.round(total*.55);
+        const similarCount = Math.round(total*.3);
+        const randomCount = total - targets - similarCount;
+        let pool = [];
+        for(let i=0;i<targets;i++) pool.push(target);
+        for(let i=0;i<similarCount;i++) pool.push(pick(similars));
+        for(let i=0;i<randomCount;i++) pool.push(pick(rest));
+        // Распределяем целевые символы между другими: не больше трёх подряд.
+        const other=shuffle(pool.filter(v=>v!==target));
+        const amounts=new Array(other.length+1).fill(0);
+        const slots=Array.from({length:other.length},(_,i)=>i+1);
+        for(let i=0;i<targets;i++){
+          const free=slots.filter(k=>amounts[k]<3);
+          amounts[pick(free)]++;
+        }
+        series=[];
+        other.forEach((v,i)=>{
+          series.push(v);
+          for(let k=0;k<amounts[i+1];k++) series.push(target);
+        });
+      }
+      function updateStats(){
+        goodEl.textContent = good;
+        missedEl.textContent = missed;
+        falsePressEl.textContent = falsePress;
+        if(playing){
+          progressEl.textContent = (paused?'Пауза · ':'') + (index+1) + ' / ' + series.length;
+        }
+      }
+      function animateSwap(){
+        symbolTextEl.classList.remove('swap');
+        void symbolTextEl.offsetWidth;
+        symbolTextEl.classList.add('swap');
+      }
+      function clearTimers(){
+        clearTimeout(timer); timer=null;
+        clearTimeout(flashTimer); flashTimer=null;
+      }
+      function flash(kind){
+        symbolEl.classList.remove('good','bad');
+        void symbolEl.offsetWidth;
+        symbolEl.classList.add(kind);
+        clearTimeout(flashTimer);
+        flashTimer=setTimeout(()=>symbolEl.classList.remove('good','bad'),180);
+      }
+      function showNext(){
+        if(index>=series.length){ finishGame(true); return; }
+        const value = series[index];
+        isTargetStimulus = value === currentTarget;
+        answered = false;
+        symbolTextEl.textContent=value;
+        animateSwap();
+        updateStats();
+      }
+      function scheduleNext(ms=speed){
+        clearTimeout(timer); timer=null;
+        if(!playing || paused) return;
+        remaining=ms;
+        deadline=performance.now()+ms;
+        const token=currentSession;
+        timer=setTimeout(()=>{
+          if(token!==currentSession || !playing || paused) return;
+          if(!answered && isTargetStimulus) missed++;
+          index++;
+          showNext();
+          if(playing && !paused) scheduleNext();
+        },ms);
+      }
+      function finishGame(completed){
+        if(!playing) return;
+        const processed = completed ? series.length : index;
+        playing=false; paused=false; answered=true;
+        currentSession++;
+        clearTimers();
+        symbolEl.classList.remove('good','bad','paused');
+        symbolEl.dataset.playing='false';
+        symbolTextEl.textContent='✓';
+        selectEl.disabled=false;
+        seriesLengthEl.disabled=false;
+        pauseBtn.disabled=true;
+        finishBtn.disabled=true;
+        pauseBtn.textContent='Пауза';
+        startBtn.textContent='Начать ещё раз';
+        progressEl.textContent=completed ? 'Серия завершена' : 'Серия остановлена';
+        finishBox.hidden=false;
+        const observed=good+missed;
+        finishBox.innerHTML = '<strong>'+(completed?'Готово!':'Остановлено')+'</strong>'+
+          '<div>Найдено нужных букв: <b>'+good+'</b>'+(observed?(' из '+observed):'')+'</div>'+
+          '<div>Пропусков: <b>'+missed+'</b> · лишних нажатий: <b>'+falsePress+'</b></div>'+
+          '<small>Пройдено символов: '+processed+' из '+series.length+'. Результат помогает выбрать следующую тренировку, а не оценить ребёнка.</small>';
+        updateStats();
+      }
+      function startGame(){
+        currentSession++;
+        clearTimers();
+        good=0; missed=0; falsePress=0;
+        index=0; paused=false;
+        currentTarget=selectEl.value || pick(Object.keys(SIMILAR));
+        targetEl.textContent=currentTarget;
+        buildSeries(currentTarget);
+        playing=true;
+        answered=false;
+        selectEl.disabled=true;
+        seriesLengthEl.disabled=true;
+        symbolEl.classList.remove('good','bad','paused');
+        symbolEl.dataset.playing='true';
+        pauseBtn.disabled=false;
+        finishBtn.disabled=false;
+        pauseBtn.textContent='Пауза';
+        startBtn.textContent='Заново';
+        finishBox.hidden=true;
+        finishBox.innerHTML='';
+        saveSettings();
+        startBtn.blur();
+        showNext();
+        scheduleNext();
+      }
+      function selectCurrent(){
+        if(!playing || paused || answered || index>=series.length) return;
+        answered=true;
+        if(isTargetStimulus){ good++; flash('good'); }
+        else { falsePress++; flash('bad'); }
+        updateStats();
+      }
+      function togglePause(){
+        if(!playing) return;
+        paused=!paused;
+        if(paused){
+          remaining=Math.max(0,deadline-performance.now());
+          clearTimeout(timer); timer=null;
+          symbolEl.classList.add('paused');
+          pauseBtn.textContent='Продолжить';
+        }else{
+          symbolEl.classList.remove('paused');
+          pauseBtn.textContent='Пауза';
+          scheduleNext(remaining);
+        }
+        updateStats();
+      }
+      startBtn.addEventListener('click',startGame);
+      symbolEl.addEventListener('click',selectCurrent);
+      symbolEl.addEventListener('keydown', e=>{
+        if(e.key==='Enter'){e.preventDefault();selectCurrent();}
+      });
+      pauseBtn.addEventListener('click',togglePause);
+      finishBtn.addEventListener('click',()=>finishGame(false));
+      selectEl.addEventListener('change',()=>{
+        if(!playing) targetEl.textContent=selectEl.value || '—';
+        saveSettings();
+      });
+      speedEl.addEventListener('input',()=>{
+        speed=SPEED_TABLE[Number(speedEl.value)-1];
+        updateSpeedLabel(); saveSettings();
+      });
+      seriesLengthEl.addEventListener('change',saveSettings);
+      document.addEventListener('keydown',e=>{
+        if(e.code!=='Space' || !playing) return;
+        if(e.target && /^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(e.target.tagName)) return;
+        e.preventDefault(); togglePause();
+      });
+      fillSelect(); loadSettings();
+      speed=SPEED_TABLE[Number(speedEl.value)-1];
+      updateSpeedLabel();
+      targetEl.textContent=selectEl.value || '—';
+      symbolEl.dataset.playing='false';
+      updateStats();
+    </script>
+
+
+<script src="../../assets/menu-data.js"></script>
+<script src="../../assets/menu-drawer.js"></script>
+</body>
+
+</html>

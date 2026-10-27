@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Следопыт — NeuroX Mini</title>
+<style>
+:root{--navy:#1E3F8A;--navy2:#2D6CDF;--orange:#FF6A00;--orange-soft:#FFF0E5;--ink:#26354A;--muted:#69778B;--line:#DEE6F1;--bg:#F6F8FD;--good:#1C9E63;--goodsoft:#E4F8ED;--bad:#D84A4A}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.48}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #7DAAFF;outline-offset:3px}
+header{background:var(--navy);color:white;min-height:66px;display:flex;align-items:center;justify-content:space-between;padding:10px max(16px,calc((100vw - 980px)/2));gap:10px}
+.logo{font-size:clamp(20px,3vw,26px);font-weight:850;font-style:italic;letter-spacing:.2px}header .small{font-size:13px;opacity:.9;font-weight:650;text-align:right}
+.header-btn{border:1px solid rgba(255,255,255,.4);border-radius:12px;background:#ffffff1b;color:white;padding:10px 14px;font-size:14px;font-weight:750}
+#app{max-width:990px;margin:0 auto;padding:20px 16px 40px}
+h1,h2,h3,p{margin-top:0}h1{font-size:clamp(24px,4vw,33px);line-height:1.2;color:var(--navy);margin-bottom:8px}h2{font-size:21px;color:var(--navy);margin-bottom:12px}h3{font-size:15px;color:var(--navy);margin-bottom:12px}
+.lead{font-size:15px;line-height:1.6;color:var(--muted);margin-bottom:22px}
+.panel{background:white;border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 5px 24px rgba(30,63,138,.055)}
+.intro-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:24px}
+.preset{border:2px solid var(--line);border-radius:18px;background:white;padding:18px 12px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:9px;min-height:162px;transition:.15s}
+.preset:hover{border-color:#93B5EE;transform:translateY(-2px)}.preset.selected{background:#EBF3FF;border-color:var(--navy2);box-shadow:0 4px 14px #2D6CDF16}
+.preset-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--orange-soft);color:var(--orange);font-size:24px;font-weight:900}
+.preset strong{color:var(--navy);font-size:17px}.preset span:not(.preset-icon){font-size:13px;color:var(--muted);line-height:1.4}
+.settings-head{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.toggle-details{border:0;background:#EAF1FB;color:var(--navy);padding:10px 14px;border-radius:12px;font-weight:800}
+.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 22px;margin-top:16px;padding-top:17px;border-top:1px solid var(--line)}.setting{display:block;min-width:0}
+.setting label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;font-weight:760;margin-bottom:8px}.setting output{color:var(--orange);font-weight:850}
+.setting select,.setting input[type=range]{width:100%}.setting select{border:2px solid var(--line);background:white;color:var(--ink);padding:10px;border-radius:11px;font-weight:700}.setting input[type=range]{accent-color:var(--orange);min-height:32px}
+.field-hint{font-size:12px;line-height:1.4;color:var(--muted);margin-top:5px}
+.bottom-settings{display:flex;align-items:center;flex-wrap:wrap;gap:12px 24px;margin-top:18px}.check-line{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:740;cursor:pointer}.check-line input{width:19px;height:19px;accent-color:var(--orange)}
+.btn{border:0;border-radius:14px;background:var(--orange);color:white;font-size:16px;font-weight:840;padding:14px 23px;min-height:48px;transition:.14s;box-shadow:0 4px 0 #D35704}.btn:hover:not(:disabled){filter:brightness(.97);transform:translateY(-1px)}.btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 #D35704}
+.btn.secondary{background:#EAF0FB;color:var(--navy);box-shadow:none}.btn.outline{background:white;color:var(--navy);border:2px solid #C9D8EC;box-shadow:none}.btn.soft{background:var(--goodsoft);color:#16754B;box-shadow:none}
+.actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin-top:20px}.actions .btn{flex:0 1 auto}.start-btn{width:100%;margin-top:22px;font-size:18px;padding:17px}
+.game-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}.game-top h1{font-size:25px;margin:0}.progress-label{font-weight:770;color:var(--muted);font-size:14px}
+.progress{height:9px;background:#E8EEF8;border-radius:100px;overflow:hidden;margin-bottom:18px}.progress-fill{height:100%;background:linear-gradient(90deg,var(--orange),#FFC188);transition:width .2s}
+.game-shell{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:20px;align-items:start}
+.board-card{padding:20px 16px 24px;border-radius:22px;background:white;border:1px solid var(--line);box-shadow:0 5px 24px rgba(30,63,138,.055);min-width:0}
+.scene-title{text-align:center;font-weight:860;color:var(--navy);font-size:clamp(19px,3vw,25px);min-height:31px;margin-bottom:6px}
+.scene-desc{text-align:center;color:var(--muted);font-size:14px;line-height:1.35;min-height:38px;margin-bottom:15px}
+.board{width:min(100%,445px);aspect-ratio:1;margin:0 auto;display:grid;grid-template-columns:repeat(var(--grid-size),minmax(0,1fr));gap:clamp(4px,1vw,8px);touch-action:manipulation}
+.cell{appearance:none;position:relative;padding:0;min-width:0;border:2px solid #E1E8F1;border-radius:clamp(9px,1.6vw,16px);background:#F1F5FA;box-shadow:inset 0 -3px 0 #00000008;transition:background .12s,border-color .12s,transform .12s}
+.cell:disabled{opacity:1;cursor:default}.cell::after{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:clamp(11px,2.4vw,24px)}
+.cell.start{border-color:#7B9CD0;background:#DFEAFE}.cell.start::after{content:"●";color:var(--navy);font-size:22px}.cell.finish{border:3px dashed #74B69A;background:#F2FAF6}.cell.finish::after{content:"◎";color:#38A676;font-size:clamp(16px,3vw,30px)}
+.cell.preview{background:#FFE0C8;border-color:#FFA15D}.cell.preview.active{background:var(--orange);border-color:#DA5600;transform:scale(1.04);z-index:1}
+.cell.preview.active::after{content:"●";color:white;font-size:20px}.cell.walked{background:#FFE1CA;border-color:#FFA363}.cell.current{background:#DCE9FF;border:3px solid var(--navy2)}.cell.current::after{content:"●";color:var(--navy);font-size:clamp(20px,4vw,34px)}
+.cell.mistake{background:#FFDADB;border-color:var(--bad);animation:wiggle .33s}.cell.hint{background:#FFF1AD;border-color:#E9B829;animation:hintpulse .75s ease-in-out 2}
+@keyframes wiggle{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}@keyframes hintpulse{50%{transform:scale(1.1)}}
+.side{background:white;border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 5px 24px rgba(30,63,138,.055)}
+.status{background:#EFF4FD;border-radius:15px;padding:14px;color:var(--navy);font-size:14px;font-weight:750;line-height:1.5;min-height:78px;margin:0 0 15px}.status.success{background:var(--goodsoft);color:#16754B}.status.warning{background:#FFF2D8;color:#8A5700}
+.side-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:10px 0;font-size:14px}.side-meta strong{color:var(--navy)}
+.side .btn{width:100%;margin-top:12px}.pad-note{font-size:12px;text-align:center;line-height:1.45;color:var(--muted);margin:15px 0 8px}
+.pad{display:grid;grid-template-areas:'. up .' 'left down right';grid-template-columns:repeat(3,56px);justify-content:center;gap:7px;margin:0 auto}
+.pad button{display:grid;place-items:center;min-height:53px;font-size:25px;font-weight:900;border:2px solid #CDDDF2;color:var(--navy);background:#F0F5FD;border-radius:12px;box-shadow:none}
+.pad button:active:not(:disabled){background:#D6E7FF;transform:scale(.94)}.pad [data-dir="up"]{grid-area:up}.pad [data-dir="down"]{grid-area:down}.pad [data-dir="left"]{grid-area:left}.pad [data-dir="right"]{grid-area:right}
+.legend{display:flex;justify-content:center;gap:17px;flex-wrap:wrap;margin:17px auto 0;color:var(--muted);font-weight:730;font-size:12px}.dot{display:inline-block;vertical-align:-2px;width:13px;height:13px;border-radius:5px;margin-right:5px}.dot.current{background:#2D6CDF}.dot.walked{background:#FFB77F}.dot.goal{border:2px dashed #50A47D;background:#F2FAF6}
+.finish-panel{max-width:620px;margin:0 auto;text-align:center}.finish-panel h1{margin-bottom:14px}.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}.result-item{padding:18px 10px;border-radius:16px;background:#F2F6FC}.result-item strong{display:block;font-size:32px;color:var(--navy);margin-bottom:4px}.result-item span{color:var(--muted);font-size:13px;font-weight:710}
+@media(max-width:720px){#app{padding:16px 12px 32px}.panel{padding:18px}.game-shell{grid-template-columns:1fr;gap:12px}.board-card{padding:14px 12px}.board{width:min(100%,430px)}.side{display:grid;grid-template-columns:1fr 1fr;gap:9px 12px;padding:15px}.side .status{grid-column:1/-1;margin:0;min-height:auto}.side-meta{padding:7px 0}.side .btn{margin:0}.side .pad-note,.side .pad{grid-column:1/-1}.side .pad-note{margin:8px 0 0}.side .pad{grid-template-columns:repeat(3,54px)}.scene-desc{margin-bottom:12px;min-height:auto}}
+@media(max-width:460px){.intro-grid{grid-template-columns:1fr;gap:8px}.preset{display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-rows:auto auto;gap:4px 12px;min-height:unset;padding:11px 13px;align-items:center}.preset strong{grid-column:2;grid-row:1;font-size:15px}.preset span:not(.preset-icon){grid-column:2;grid-row:2;font-size:12px}.preset-icon{width:38px;height:38px;font-size:20px;grid-row:1/3;grid-column:1}.settings-grid{grid-template-columns:1fr}.settings-head h2{font-size:19px}.game-top h1{font-size:22px}.side{grid-template-columns:1fr 1fr}.side .btn{font-size:13px;padding:12px 7px;min-height:47px}.board{gap:5px}.cell{border-radius:10px}.result-grid{gap:6px}.result-item{padding:12px 5px}.result-item strong{font-size:26px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<link rel="stylesheet" href="../assets/menu-drawer.css">
+</head>
+<body>
+<header>
+  <button id="headerBack" class="header-btn" type="button" hidden>← Настройки</button>
+  <div class="logo">Следопыт</div>
+  <div class="small" id="headerLabel">Запомни маршрут</div>
+</header>
+<main id="app"></main>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const app = $('app');
+const back = $('headerBack');
+const headerLabel = $('headerLabel');
+const DELTAS = [[1,0],[-1,0],[0,1],[0,-1]];
+const PRESETS = {
+  first:{size:3,steps:3,speed:900,hold:2300},
+  train:{size:4,steps:5,speed:700,hold:1600},
+  brave:{size:5,steps:7,speed:510,hold:1000}
+};
+const settings = {size:4,steps:5,speed:700,hold:1600,count:10,sound:true,arrows:true};
+let preset = 'train';
+let advancedOpen = false;
+let round = 0;
+let route = [];
+let pos = 0;
+let phase = 'settings'; // settings, preview, input, completed, finished
+let assisted = false;
+let errorsThisRound = 0;
+let previewsThisRound = 0;
+let selfCompleted = 0, assistedCompleted = 0, skipped = 0, totalErrors = 0;
+let viewId = 0;
+const timers = new Set();
+let audio = null;
+
+function stopTimers(){
+  viewId++;
+  timers.forEach(t => clearTimeout(t));
+  timers.clear();
+}
+function later(ms, fn){
+  const currentView = viewId;
+  const timer = setTimeout(() => { timers.delete(timer); if(currentView === viewId) fn(); }, ms);
+  timers.add(timer);
+  return timer;
+}
+function beep(hz,ms=110){
+  if(!settings.sound) return;
+  try{
+    if(!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+    if(audio.state === 'suspended') audio.resume().catch(()=>{});
+    const osc = audio.createOscillator(), gain = audio.createGain();
+    osc.type = 'sine'; osc.frequency.value = hz;
+    osc.connect(gain); gain.connect(audio.destination);
+    const t = audio.currentTime;
+    gain.gain.setValueAtTime(.065,t);
+    gain.gain.exponentialRampToValueAtTime(.0001,t+ms/1000);
+    osc.start(t); osc.stop(t+ms/1000+.02);
+  }catch(e){}
+}
+function setHeader(text, showBack=true){headerLabel.textContent=text; back.hidden=!showBack;}
+function safeNum(n,min,max){return Math.min(max,Math.max(min,Number(n)||min));}
+function neighbors(p,size){return DELTAS.map(([dx,dy])=>({x:p.x+dx,y:p.y+dy})).filter(q=>q.x>=0&&q.y>=0&&q.x<size&&q.y<size);}
+function key(p){return `${p.x},${p.y}`;}
+function isEdge(p,n){return p.x===0||p.y===0||p.x===n-1||p.y===n-1;}
+function isValidEnd(p,start,n){return isEdge(p,n) && Math.abs(start.x-p.x)+Math.abs(start.y-p.y)>=2;}
+function stepWord(n){return n%10===1&&n%100!==11?'шаг':(n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?'шага':'шагов');}
+function shuffle(input){const a=input.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+// Iterative backtracking avoids unbounded recursion and always keeps adjacent steps.
+function generatePath(size,steps){
+  const edge = [];
+  for(let y=0;y<size;y++) for(let x=0;x<size;x++) if(isEdge({x,y},size)) edge.push({x,y});
+  for(let trial=0;trial<24;trial++){
+    const start = shuffle(edge)[0];
+    const path = [start], used = new Set([key(start)]);
+    const stack = [{options:shuffle(neighbors(start,size))}];
+    let operations = 0;
+    while(stack.length && operations++<110000){
+      const end = path[path.length-1];
+      if(path.length===steps+1){
+        if(isValidEnd(end,start,size)) return path.slice();
+      }
+      const frame=stack[stack.length-1];
+      if(path.length===steps+1 || !frame.options.length){
+        stack.pop(); const removed=path.pop();used.delete(key(removed));
+        continue;
+      }
+      const next=frame.options.pop();
+      if(used.has(key(next))) continue;
+      if(path.length+1===steps+1 && !isValidEnd(next,start,size)) continue;
+      used.add(key(next));path.push(next);
+      stack.push({options:shuffle(neighbors(next,size))});
+    }
+  }
+  // A reachable short route is always preferable to a frozen screen.
+  return null;
+}
+function maxSteps(){return Math.min(18,settings.size*settings.size-1);}
+function markCustom(){preset = null; updatePresetButtons();}
+function setPreset(id){
+  preset=id;
+  Object.assign(settings,PRESETS[id]);
+  if($('sizeSelect')){
+    $('sizeSelect').value=String(settings.size);
+    $('stepsRange').max=String(maxSteps());$('stepsRange').value=String(settings.steps);
+    $('speedSelect').value=String(settings.speed);$('holdSelect').value=String(settings.hold);
+    refreshSettingsValues();
+  }
+  updatePresetButtons();
+}
+function updatePresetButtons(){document.querySelectorAll('.preset').forEach(el=>{const chosen=el.dataset.preset===preset;el.classList.toggle('selected',chosen);el.setAttribute('aria-pressed',String(chosen));});}
+function refreshSettingsValues(){
+  if($('stepsOut')) $('stepsOut').textContent=`${settings.steps} ${stepWord(settings.steps)}`;
+  if($('sizeSelect')) $('sizeSelect').value=settings.size;
+  if($('roundSelect')) $('roundSelect').value=settings.count;
+}
+function showSettings(){
+  stopTimers(); phase='settings'; setHeader('Запомни маршрут',false);
+  app.innerHTML=`
+    <section class="panel">
+      <h1>Найди дорогу!</h1>
+      <p class="lead">Посмотри, как проходит следопыт. Потом повтори его путь по клеточкам. Можно нажимать на поле или управлять стрелками.</p>
+      <h2>Выбери сложность</h2>
+      <div class="intro-grid" role="group" aria-label="Уровень сложности">
+        <button class="preset" type="button" data-preset="first" aria-pressed="false"><span class="preset-icon">1</span><strong>Первые шаги</strong><span>3×3, короткий путь, медленный показ</span></button>
+        <button class="preset" type="button" data-preset="train" aria-pressed="false"><span class="preset-icon">2</span><strong>Тренируемся</strong><span>4×4, повороты и пять шагов</span></button>
+        <button class="preset" type="button" data-preset="brave" aria-pressed="false"><span class="preset-icon">3</span><strong>Смелый следопыт</strong><span>5×5, длиннее и быстрее</span></button>
+      </div>
+      <div class="settings-head">
+        <h2 style="margin:0">Настройки занятия</h2>
+        <button id="detailsToggle" class="toggle-details" type="button" aria-expanded="${advancedOpen}">${advancedOpen?'Скрыть точные настройки':'Настроить вручную'} ${advancedOpen?'▴':'▾'}</button>
+      </div>
+      <div id="advanced" ${advancedOpen?'':'hidden'}>
+        <div class="settings-grid">
+          <div class="setting"><label for="sizeSelect">Размер поля</label><select id="sizeSelect"><option value="3">3 × 3</option><option value="4">4 × 4</option><option value="5">5 × 5</option><option value="6">6 × 6</option></select></div>
+          <div class="setting"><label for="stepsRange">Длина пути <output id="stepsOut"></output></label><input type="range" id="stepsRange" min="2" max="${maxSteps()}" value="${settings.steps}"><div class="field-hint">Сколько соседних клеток нужно пройти от старта</div></div>
+          <div class="setting"><label for="speedSelect">Скорость показа</label><select id="speedSelect"><option value="1000">Очень медленно</option><option value="900">Медленно</option><option value="700">Спокойно</option><option value="510">Быстрее</option><option value="350">Быстро</option></select></div>
+          <div class="setting"><label for="holdSelect">Время запоминания</label><select id="holdSelect"><option value="3500">3,5 секунды</option><option value="2300">2,3 секунды</option><option value="1600">1,6 секунды</option><option value="1000">1 секунда</option></select><div class="field-hint">Сколько времени весь маршрут останется видимым</div></div>
+        </div>
+      </div>
+      <div class="bottom-settings">
+        <label class="setting" style="min-width:155px" for="roundSelect"><span style="display:block;margin-bottom:6px">Заданий за занятие</span><select id="roundSelect"><option value="5">5 заданий</option><option value="10">10 заданий</option><option value="15">15 заданий</option></select></label>
+        <label class="check-line"><input type="checkbox" id="soundCheck"> Звуки игры</label>
+        <label class="check-line"><input type="checkbox" id="arrowsCheck"> Стрелки управления</label>
+      </div>
+      <button class="btn start-btn" type="button" id="startGame">Начать игру →</button>
+    </section>`;
+  document.querySelectorAll('.preset').forEach(btn=>btn.addEventListener('click',()=>setPreset(btn.dataset.preset)));
+  updatePresetButtons();
+  $('detailsToggle').addEventListener('click',()=>{advancedOpen=!advancedOpen;$('advanced').hidden=!advancedOpen;const b=$('detailsToggle');b.textContent=advancedOpen?'Скрыть точные настройки ▴':'Настроить вручную ▾';b.setAttribute('aria-expanded',String(advancedOpen));});
+  $('sizeSelect').value=settings.size;$('speedSelect').value=settings.speed;$('holdSelect').value=settings.hold;
+  $('stepsRange').value=settings.steps;$('roundSelect').value=settings.count;$('soundCheck').checked=settings.sound;$('arrowsCheck').checked=settings.arrows;
+  refreshSettingsValues();
+  $('sizeSelect').addEventListener('change', e=>{settings.size=Number(e.target.value);settings.steps=Math.min(settings.steps,maxSteps());$('stepsRange').max=maxSteps();$('stepsRange').value=settings.steps;refreshSettingsValues();markCustom();});
+  $('stepsRange').addEventListener('input',e=>{settings.steps=Number(e.target.value);refreshSettingsValues();markCustom();});
+  $('speedSelect').addEventListener('change',e=>{settings.speed=Number(e.target.value);markCustom();});
+  $('holdSelect').addEventListener('change',e=>{settings.hold=Number(e.target.value);markCustom();});
+  $('roundSelect').addEventListener('change',e=>settings.count=Number(e.target.value));
+  $('soundCheck').addEventListener('change',e=>settings.sound=e.target.checked);
+  $('arrowsCheck').addEventListener('change',e=>settings.arrows=e.target.checked);
+  $('startGame').addEventListener('click',startGame);
+}
+function startGame(){
+  stopTimers();round=0;selfCompleted=0;assistedCompleted=0;skipped=0;totalErrors=0;
+  startRound();
+}
+function startRound(){
+  stopTimers();
+  let generated=generatePath(settings.size,settings.steps);
+  if(!generated){
+    const adjusted=Math.max(2,settings.steps-1);
+    generated=generatePath(settings.size,adjusted);
+    if(!generated){showSettings();return;}
+  }
+  route=generated;pos=0;assisted=false;errorsThisRound=0;previewsThisRound=0;
+  showRoundLayout();startPreview();
+}
+function showRoundLayout(){
+  setHeader(`Задание ${round+1} из ${settings.count}`,true);
+  app.innerHTML=`
+    <div class="game-top"><h1>Повтори путь</h1><span class="progress-label">Задание ${round+1} / ${settings.count}</span></div>
+    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${settings.count}" aria-valuenow="${round}"><div class="progress-fill" style="width:${round/settings.count*100}%"></div></div>
+    <div class="game-shell">
+      <section class="board-card" aria-label="Игровое поле">
+        <div class="scene-title" id="sceneTitle" aria-live="polite">Смотри внимательно</div>
+        <p class="scene-desc" id="sceneDescription">Запомни, как следопыт проходит маршрут.</p>
+        <div class="board" id="board" style="--grid-size:${settings.size}"></div>
+        <div class="legend"><span><span class="dot current"></span>Следопыт</span><span><span class="dot walked"></span>Пройдено</span><span><span class="dot goal"></span>Финиш</span></div>
+      </section>
+      <aside class="side">
+        <p class="status" id="status" aria-live="polite">Следопыт сейчас покажет дорогу.</p>
+        <div class="side-meta"><span>Длина пути</span><strong>${route.length-1} ${stepWord(route.length-1)}</strong></div>
+        <div class="side-meta"><span>Твой путь</span><strong id="stepsDone">0 из ${route.length-1}</strong></div>
+        <button class="btn secondary" id="repeatBtn" type="button" disabled>↻ Показать ещё раз</button>
+        <button class="btn soft" id="hintBtn" type="button" disabled>Подсказка</button>
+        <button class="btn" id="nextBtn" type="button" disabled>${round===settings.count-1?'Завершить':'Следующее задание →'}</button>
+        <button class="btn outline" id="skipBtn" type="button">Пропустить</button>
+        <p class="pad-note" id="padNote">${settings.arrows?'Можно пользоваться стрелками или нажимать на соседние клетки.':'Нажимай на соседние клетки поля.'}</p>
+        ${settings.arrows?'<div class="pad" id="pad"><button type="button" data-dir="up" aria-label="Вверх" disabled>↑</button><button type="button" data-dir="left" aria-label="Влево" disabled>←</button><button type="button" data-dir="down" aria-label="Вниз" disabled>↓</button><button type="button" data-dir="right" aria-label="Вправо" disabled>→</button></div>':''}
+      </aside>
+    </div>`;
+  const board=$('board');
+  for(let y=0;y<settings.size;y++) for(let x=0;x<settings.size;x++){
+    const btn=document.createElement('button');
+    btn.type='button';btn.className='cell';btn.dataset.x=x;btn.dataset.y=y;
+    btn.setAttribute('aria-label',`Строка ${y+1}, столбец ${x+1}`);
+    btn.disabled=true;btn.addEventListener('click',()=>moveTo(x,y));board.appendChild(btn);
+  }
+  $('repeatBtn').addEventListener('click',()=>{if(phase!=='input')return;assisted=true;previewsThisRound++;pos=0;startPreview();});
+  $('hintBtn').addEventListener('click',showHint);
+  $('nextBtn').addEventListener('click',()=>{if(phase!=='completed')return;nextRound();});
+  $('skipBtn').addEventListener('click',()=>{if(phase!=='input'&&phase!=='preview')return;skipped++;nextRound();});
+  document.querySelectorAll('.pad button').forEach(btn=>btn.addEventListener('click',()=>moveDirection(btn.dataset.dir)));
+}
+function cellAt(x,y){return $('board')?.querySelector(`[data-x="${x}"][data-y="${y}"]`)||null;}
+function drawBoard(previewIndex=-1){
+  const cellEls=$('board')?.querySelectorAll('.cell');if(!cellEls)return;
+  cellEls.forEach(c=>c.className='cell');
+  const start=route[0], finish=route[route.length-1];
+  cellAt(start.x,start.y)?.classList.add('start');
+  cellAt(finish.x,finish.y)?.classList.add('finish');
+  if(phase==='preview'){
+    for(let i=0;i<=previewIndex;i++){
+      const p=route[i];cellAt(p.x,p.y)?.classList.add('preview');
+    }
+    if(previewIndex>=0){const p=route[previewIndex];cellAt(p.x,p.y)?.classList.add('active');}
+  }else{
+    for(let i=1;i<pos;i++){const p=route[i];cellAt(p.x,p.y)?.classList.add('walked');}
+    const p=route[pos]; if(p)cellAt(p.x,p.y)?.classList.add('current');
+  }
+  cellEls.forEach(c=>c.disabled=phase!=='input');
+}
+function setStatus(text,type=''){const el=$('status');if(!el)return;el.textContent=text;el.className=`status ${type}`;}
+function setControlState(){
+  const playing=phase==='input';
+  if($('repeatBtn'))$('repeatBtn').disabled=!playing;
+  if($('hintBtn'))$('hintBtn').disabled=!playing;
+  document.querySelectorAll('.pad button').forEach(b=>b.disabled=!playing);
+  if($('nextBtn'))$('nextBtn').disabled=phase!=='completed';
+  if($('stepsDone'))$('stepsDone').textContent=`${pos} из ${route.length-1}`;
+}
+function startPreview(){
+  stopTimers();phase='preview';pos=0;
+  $('sceneTitle').textContent='Смотри внимательно';
+  $('sceneDescription').textContent='Запомни маршрут от синей точки до финиша.';
+  setStatus('Пока просто смотри. Твоя очередь начнётся после показа.');
+  drawBoard(-1);setControlState();
+  route.forEach((p,index)=>later(index*settings.speed,()=>{if(phase!=='preview')return;drawBoard(index);if(index>0)beep(460+Math.min(index,8)*38,80);}));
+  later((route.length-1)*settings.speed+settings.hold,beginInput);
+}
+function beginInput(){
+  if(phase!=='preview')return;
+  phase='input';pos=0;
+  $('sceneTitle').textContent='Твоя очередь!';
+  $('sceneDescription').textContent='Проведи следопыта по тому же пути.';
+  setStatus('Нажимай на соседнюю клетку или используй стрелки.');
+  drawBoard();setControlState();
+}
+function moveDirection(dir){
+  if(phase!=='input')return;
+  const d={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[dir];if(!d)return;
+  const p=route[pos];moveTo(p.x+d[0],p.y+d[1]);
+}
+function moveTo(x,y){
+  if(phase!=='input'||x<0||y<0||x>=settings.size||y>=settings.size)return;
+  const here=route[pos];
+  if(Math.abs(x-here.x)+Math.abs(y-here.y)!==1){setStatus('Выбери клетку рядом с синей точкой.','warning');return;}
+  const target=route[pos+1];if(!target)return;
+  if(target.x!==x||target.y!==y){
+    assisted=true;errorsThisRound++;totalErrors++;
+    const cell=cellAt(x,y);cell?.classList.add('mistake');
+    beep(240,165);setStatus('Не туда. Попробуй другой соседний квадратик.','warning');
+    later(430,()=>cell?.classList.remove('mistake'));
+    return;
+  }
+  pos++;beep(620+Math.min(pos,8)*38,90);drawBoard();setControlState();
+  if(pos===route.length-1)completeRound();
+  else setStatus(`Получается! Пройдено ${pos} из ${route.length-1}.`);
+}
+function showHint(){
+  if(phase!=='input')return;
+  assisted=true;
+  const next=route[pos+1];if(!next)return;
+  const cell=cellAt(next.x,next.y);
+  cell?.classList.add('hint');
+  setStatus('Жёлтая клетка подсказывает следующий шаг.','warning');
+  later(1300,()=>cell?.classList.remove('hint'));
+}
+function completeRound(){
+  stopTimers();phase='completed';
+  if(assisted) assistedCompleted++;else selfCompleted++;
+  $('sceneTitle').textContent='Путь найден!';
+  $('sceneDescription').textContent='Следопыт добрался до финиша.';
+  setStatus(assisted?'Получилось! Можно повторить, чтобы закрепить маршрут.':'Отлично! Весь маршрут пройден самостоятельно.','success');
+  drawBoard();setControlState();
+  beep(840,230);
+}
+function nextRound(){
+  stopTimers();round++;
+  if(round>=settings.count)showResult();else startRound();
+}
+function showResult(){
+  stopTimers();phase='finished';setHeader('Тренировка завершена',true);
+  app.innerHTML=`<section class="panel finish-panel">
+    <h1>Маршруты пройдены!</h1>
+    <p class="lead">Хорошая работа. Вот как прошла тренировка.</p>
+    <div class="result-grid">
+      <div class="result-item"><strong>${selfCompleted}</strong><span>самостоятельно</span></div>
+      <div class="result-item"><strong>${assistedCompleted}</strong><span>с помощью или после ошибки</span></div>
+      <div class="result-item"><strong>${skipped}</strong><span>пропущено</span></div>
+    </div>
+    <p class="lead">Ошибочных шагов: ${totalErrors}. Это ориентир для педагога, а не оценка ребёнка.</p>
+    <div class="actions"><button class="btn" id="againBtn" type="button">Сыграть ещё раз</button><button class="btn secondary" id="settingsBtn" type="button">Изменить настройки</button></div>
+  </section>`;
+  $('againBtn').addEventListener('click',startGame);
+  $('settingsBtn').addEventListener('click',showSettings);
+}
+back.addEventListener('click',showSettings);
+document.addEventListener('keydown',e=>{
+  if(phase!=='input'||!settings.arrows)return;
+  if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;
+  const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(map[e.key]){e.preventDefault();moveDirection(map[e.key]);}
+});
+showSettings();
+})();
+</script>
+<script src="../assets/menu-data.js"></script>
+<script src="../assets/menu-drawer.js"></script>
+</body>
+</html>

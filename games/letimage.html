@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Буква и картинка — NeuroX Mini</title>
+<style>
+  :root{
+    --blue:#2D6CDF;--blue-dark:#1E4FA8;--blue-light:#EBF2FF;
+    --orange:#FF8C42;--orange-dark:#E86E1F;--orange-light:#FFF2E5;
+    --bg:#F7F9FC;--text:#1F2937;--text-muted:#6B7280;--border:#E5EAF2;
+    --green:#22C55E;--red:#EF4444;--yellow:#F59E0B;--violet:#8B5CF6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:-apple-system,'Segoe UI',Roboto,'Nunito Sans',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);padding:16px;overflow-x:hidden;}
+  .container{max-width:980px;margin:0 auto;}
+  header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:20px;padding:16px 22px;background:#fff;border-radius:20px;border:1px solid var(--border);box-shadow:0 4px 16px rgba(45,108,223,.06);flex-wrap:wrap;}
+  .back-btn{width:46px;height:46px;border:none;border-radius:14px;background:var(--blue-light);color:var(--blue);font-size:22px;font-weight:700;cursor:pointer;transition:.18s;display:flex;align-items:center;justify-content:center;}
+  .back-btn:hover{background:var(--blue);color:#fff;transform:translateY(-1px);}
+  .back-btn.hidden{visibility:hidden;pointer-events:none;}
+  h1{font-size:20px;letter-spacing:.2px;color:var(--blue-dark);font-weight:800;}
+  .score-bar{background:var(--orange);color:#fff;padding:8px 18px;border-radius:30px;font-size:14px;font-weight:700;box-shadow:0 4px 12px rgba(255,140,66,.3);white-space:nowrap;}
+  .score-bar span{color:#fff;font-weight:800;font-size:17px;}
+  main{min-height:520px;}
+  .game-header{text-align:center;margin-bottom:16px;}
+  .game-header h2{font-size:24px;margin-bottom:6px;color:var(--blue-dark);font-weight:800;}
+  .subtitle{font-size:14px;color:var(--text-muted);font-weight:600;line-height:1.45;max-width:760px;margin:0 auto;}
+  .panel{background:#fff;border:1px solid var(--border);border-radius:22px;padding:24px;box-shadow:0 8px 24px rgba(45,108,223,.06);margin-bottom:20px;}
+  .field{margin-bottom:22px;}
+  .field:last-child{margin-bottom:0;}
+  .field-label{display:block;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:12px;}
+  .hint-box{padding:12px 14px;border-radius:14px;background:var(--blue-light);font-size:14px;font-weight:700;color:var(--blue-dark);line-height:1.45;}
+  .pills{display:flex;gap:10px;flex-wrap:wrap;}
+  .pill{padding:10px 18px;border-radius:14px;border:2px solid var(--border);background:#fff;color:var(--text-muted);font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:8px;}
+  .pill:hover{border-color:var(--blue);color:var(--blue);}
+  .pill.on{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 6px 16px rgba(45,108,223,.25);}
+  .pill.on.easy{background:var(--green);border-color:var(--green);}
+  .pill.on.medium{background:var(--orange);border-color:var(--orange);}
+  .pill.on.hard{background:var(--violet);border-color:var(--violet);}
+  .letters-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;max-height:230px;overflow-y:auto;padding:10px;border:1px solid var(--border);border-radius:16px;background:var(--bg);}
+  .letter-pick{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#fff;border:2px solid var(--border);border-radius:12px;font-size:20px;font-weight:800;color:var(--text-muted);cursor:pointer;transition:.15s;user-select:none;}
+  .letter-pick:hover{border-color:var(--blue);color:var(--blue);}
+  .letter-pick.on{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 6px 14px rgba(255,140,66,.3);}
+  .letter-pick.rare{opacity:.55;}
+  .letter-pick.rare.on{opacity:1;}
+  .cat-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .mini-btn{background:var(--orange-light);border:1px solid var(--orange-light);color:var(--orange-dark);font-family:inherit;font-size:12.5px;font-weight:800;padding:6px 14px;border-radius:10px;cursor:pointer;transition:.15s;}
+  .mini-btn:hover{background:var(--orange);color:#fff;border-color:var(--orange);}
+  .btn-main{display:block;width:100%;margin:24px auto 0;padding:18px 40px;border-radius:14px;border:none;background:var(--orange);color:#fff;font-family:inherit;font-size:17px;font-weight:800;cursor:pointer;transition:.2s;letter-spacing:.5px;box-shadow:0 8px 20px rgba(255,140,66,.3);}
+  .btn-main:hover{background:var(--orange-dark);transform:translateY(-2px);}
+  .btn-main:active{transform:translateY(0);}
+  .btn-main:disabled{background:#C9D3E0;box-shadow:none;cursor:default;transform:none;}
+  .btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 28px;border-radius:14px;border:none;background:transparent;color:var(--blue-dark);font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;transition:.2s;}
+  .btn-secondary:hover{background:var(--blue-light);}
+  .setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:14px;font-weight:700;margin-bottom:10px;}
+  .switch{position:relative;display:inline-block;width:46px;height:26px;flex:0 0 auto;}
+  .switch input{opacity:0;width:0;height:0;position:absolute;}
+  .slider{position:absolute;inset:0;background:#C9D3E0;border-radius:999px;cursor:pointer;transition:.2s;}
+  .slider::before{content:"";position:absolute;height:20px;width:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+  .switch input:checked + .slider{background:var(--orange);}
+  .switch input:checked + .slider::before{transform:translateX(20px);}
+  .progress{display:flex;align-items:center;gap:12px;margin-bottom:14px;font-size:13px;color:var(--text-muted);font-weight:700;}
+  .bar{flex:1;height:8px;background:var(--blue-light);border-radius:999px;overflow:hidden;}
+  .bar span{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--orange),var(--blue));border-radius:999px;transition:width .3s ease;}
+  .mode-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:var(--orange-light);color:var(--orange-dark);font-weight:800;font-size:13px;margin-bottom:12px;}
+  .hero-letter{width:120px;height:120px;margin:0 auto 16px;border-radius:34px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--orange-light),#fff);border:3px solid var(--orange);box-shadow:0 12px 30px rgba(255,140,66,.28);}
+  .hero-letter span{font-size:72px;font-weight:900;color:var(--orange-dark);line-height:1;}
+  .picture-big{width:150px;height:150px;border-radius:28px;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 8px 20px rgba(45,108,223,.08);}
+  .picture-big .emoji{font-size:88px;line-height:1;}
+  .picture-word{text-align:center;font-size:16px;font-weight:800;color:var(--text);margin-bottom:16px;}
+  .status{text-align:center;font-size:16px;margin:14px 0;min-height:26px;font-weight:700;color:var(--text);line-height:1.4;}
+  .status.good{color:#16A34A;}
+  .status.warn{color:#D97706;}
+  .grid{display:grid;gap:10px;grid-template-columns:repeat(var(--cols,4),1fr);}
+  .card{aspect-ratio:1;background:#fff;border:2px solid var(--border);border-radius:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:6px;transition:transform .18s,border-color .18s,background .18s,box-shadow .18s;user-select:none;position:relative;overflow:hidden;}
+  .card:hover{transform:translateY(-3px);border-color:var(--orange);box-shadow:0 10px 22px rgba(255,140,66,.18);}
+  .card:active{transform:scale(.97);}
+  .card .emoji{font-size:clamp(38px,8vw,64px);line-height:1;transition:.2s;}
+  .card .word{position:absolute;left:0;right:0;bottom:0;font-size:clamp(11px,2vw,14px);color:#fff;font-weight:800;letter-spacing:.02em;text-align:center;padding:4px 4px;line-height:1.1;opacity:0;transform:translateY(6px);transition:.2s;pointer-events:none;}
+  .card.show-word .word,.card .word.visible{opacity:1;transform:translateY(0);background:rgba(45,108,223,.88);}
+  .card.correct{background:#DCFCE7;border-color:var(--green);pointer-events:none;}
+  .card.correct .emoji{font-size:clamp(34px,7vw,56px);}
+  .card.correct::after{content:"✓";position:absolute;top:4px;right:8px;color:var(--green);font-size:18px;font-weight:900;}
+  .card.wrong{animation:cardShake .4s ease;border-color:var(--red);background:#FEE2E2;}
+  .card.dim{opacity:.55;}
+  .letter-options{display:grid;gap:12px;grid-template-columns:repeat(var(--cols,4),1fr);max-width:660px;margin:0 auto;}
+  .letter-btn{min-height:88px;border-radius:18px;border:2px solid var(--border);background:#fff;color:var(--blue-dark);font-size:38px;font-weight:900;cursor:pointer;transition:.18s;box-shadow:0 4px 14px rgba(45,108,223,.06);}
+  .letter-btn:hover{transform:translateY(-2px);border-color:var(--blue);}
+  .letter-btn.correct{background:#DCFCE7;border-color:var(--green);color:var(--green);}
+  .letter-btn.wrong{background:#FEE2E2;border-color:var(--red);color:var(--red);animation:cardShake .4s ease;}
+  .choice-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .yesno-btn{min-width:150px;padding:18px 28px;border-radius:18px;border:2px solid var(--border);background:#fff;color:var(--blue-dark);font-size:20px;font-weight:900;cursor:pointer;transition:.18s;}
+  .yesno-btn:hover{transform:translateY(-2px);border-color:var(--blue);}
+  .yesno-btn.good{background:#DCFCE7;border-color:var(--green);color:var(--green);}
+  .yesno-btn.bad{background:#FEE2E2;border-color:var(--red);color:var(--red);}
+  .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px;}
+  .actions .btn-main,.actions .btn-secondary{width:auto;margin:0;padding:14px 28px;font-size:15px;}
+  .result-screen{text-align:center;padding:30px 20px;}
+  .result-screen .big{font-size:72px;margin-bottom:12px;animation:pop .5s cubic-bezier(.34,1.56,.64,1);}
+  .result-screen h2{font-size:26px;margin-bottom:10px;color:var(--blue-dark);font-weight:800;}
+  .result-screen p{color:var(--text-muted);font-size:16px;margin:6px 0;font-weight:600;}
+  .result-summary{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:22px 0;}
+  .summary-box{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:14px;}
+  .summary-box strong{display:block;font-size:28px;color:var(--blue-dark);}
+  .summary-box span{font-size:13px;font-weight:700;color:var(--text-muted);}
+  .stars{font-size:38px;margin:14px 0;letter-spacing:6px;}
+  .hidden{display:none !important;}
+  @keyframes cardShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-7px);}75%{transform:translateX(7px);}}
+  @keyframes pop{0%{transform:scale(0);}100%{transform:scale(1);}}
+  @media (max-width:700px){.grid{grid-template-columns:repeat(var(--cols-m,3),1fr);} .letter-options{grid-template-columns:repeat(var(--cols-m,2),1fr);} }
+  @media (max-width:500px){body{padding:12px;}header{padding:14px 16px;}.panel{padding:18px;border-radius:18px;}.hero-letter{width:92px;height:92px;border-radius:26px;}.hero-letter span{font-size:56px;}.picture-big{width:120px;height:120px;}.picture-big .emoji{font-size:70px;}.card{border-radius:14px;padding:4px;}.letter-btn{min-height:74px;font-size:32px;}.yesno-btn{min-width:130px;font-size:18px;padding:16px 22px;}}
+</style>
+<link rel="stylesheet" href="../assets/menu-drawer.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <button class="back-btn hidden" id="backBtn" title="В меню">←</button>
+    <h1>🔤 БУКВА И КАРТИНКА</h1>
+    <div class="score-bar hidden" id="score">Очки: <span id="scoreVal">0</span></div>
+  </header>
+  <main id="game"></main>
+</div>
+
+<script>
+const WORDS = {
+  "А":[["🍉","арбуз"],["🍍","ананас"],["🍊","апельсин"],["🚌","автобус"],["🦈","акула"]],
+  "Б":[["🍌","банан"],["🥁","барабан"],["🐿️","белка"],["🦋","бабочка"],["🛢️","бочка"]],
+  "В":[["🍇","виноград"],["🐺","волк"],["🚲","велосипед"],["🪣","ведро"],["🍴","вилка"]],
+  "Г":[["🍄","гриб"],["🍐","груша"],["🦢","гусь"],["🎸","гитара"],["🌍","глобус"]],
+  "Д":[["🏠","дом"],["🌳","дерево"],["🐬","дельфин"],["🚪","дверь"],["🍈","дыня"]],
+  "Е":[["🦝","енот"],["🦄","единорог"],["🌲","ель"]],
+  "Ё":[["🦔","ёжик"],["🎄","ёлка"]],
+  "Ж":[["🐸","жаба"],["🦒","жираф"],["🌰","жёлудь"],["🐞","жук"]],
+  "З":[["🐰","заяц"],["🦓","зебра"],["☂️","зонт"],["⭐","звезда"],["🏰","замок"]],
+  "И":[["🪡","игла"],["🦃","индюк"],["🏡","изба"]],
+  "К":[["🐱","кот"],["🐳","кит"],["📕","книга"],["🎲","кубик"],["🐮","корова"],["🔑","ключ"]],
+  "Л":[["🦁","лев"],["🦊","лиса"],["🧅","лук"],["⛵","лодка"],["🌙","луна"],["💡","лампа"]],
+  "М":[["⚽","мяч"],["🐭","мышь"],["🥕","морковь"],["🚗","машина"],["🐻","медведь"],["🍦","мороженое"]],
+  "Н":[["👃","нос"],["🔪","нож"],["🎵","нота"],["🦏","носорог"],["✂️","ножницы"]],
+  "О":[["🪟","окно"],["☁️","облако"],["🐙","осьминог"],["🦌","олень"],["👓","очки"],["🐑","овца"]],
+  "П":[["🐧","пингвин"],["🍕","пицца"],["🐓","петух"],["🚂","поезд"],["🍅","помидор"],["🦜","попугай"]],
+  "Р":[["🐟","рыба"],["🌹","роза"],["🚀","ракета"],["✋","рука"],["🖊️","ручка"],["🌈","радуга"]],
+  "С":[["🐘","слон"],["☀️","солнце"],["🐶","собака"],["🦉","сова"],["👜","сумка"],["⛄","снеговик"],["✈️","самолёт"],["🧀","сыр"]],
+  "Т":[["🐯","тигр"],["🍰","торт"],["🎃","тыква"],["📱","телефон"],["🌷","тюльпан"],["🚜","трактор"]],
+  "У":[["🦆","утка"],["🐌","улитка"],["👂","ухо"]],
+  "Ф":[["🏳️","флаг"],["🔦","фонарь"],["📷","фотоаппарат"],["👕","футболка"]],
+  "Х":[["🍞","хлеб"],["🐹","хомяк"],["🥼","халат"]],
+  "Ц":[["🌸","цветок"],["🐣","цыплёнок"],["🎪","цирк"]],
+  "Ч":[["⌚","часы"],["☕","чашка"],["🐢","черепаха"],["🧄","чеснок"],["🧳","чемодан"]],
+  "Ш":[["🎈","шар"],["🧢","шапка"],["🍫","шоколад"],["🧣","шарф"]],
+  "Щ":[["🐕","щенок"],["🪥","щётка"],["🛡️","щит"]],
+  "Ю":[["👗","юбка"],["🪀","юла"]],
+  "Я":[["🍎","яблоко"],["⚓","якорь"],["🥚","яйцо"],["🦎","ящерица"]]
+};
+const RARE = new Set(["Е","Ё","Ж","И","У","Ф","Ц","Ю","Щ"]);
+const COMMON_LETTERS = Object.keys(WORDS).filter(l => !RARE.has(l));
+const ALL_LETTERS = Object.keys(WORDS);
+const MODE_INFO = {
+  find:{ icon:"🖼️", label:"Найди картинки" },
+  choose:{ icon:"🔤", label:"Найди букву" },
+  yesno:{ icon:"✅", label:"Да или нет" },
+  mix:{ icon:"🎲", label:"Смешанные раунды" }
+};
+const DIFFICULTY_INFO = {
+  easy:{ label:"Легко", cards:6, answers:2, letters:2 },
+  medium:{ label:"Средне", cards:9, answers:3, letters:4 },
+  hard:{ label:"Сложно", cards:12, answers:4, letters:6 }
+};
+
+const $ = id => document.getElementById(id);
+const gameEl = $("game");
+const backBtn = $("backBtn");
+const scoreEl = $("score");
+const scoreVal = $("scoreVal");
+
+let globalScore = 0;
+function addScore(n){ globalScore += n; scoreVal.textContent = globalScore; }
+function shuffle(a){ const b=a.slice(); for(let i=b.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]]; } return b; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function clamp(num,min,max){ return Math.max(min, Math.min(max, num)); }
+function escapeHtml(text){ return String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function wordForm(n, forms){
+  const m = Math.abs(n) % 100, m1 = m % 10;
+  if (m > 10 && m < 20) return forms[2];
+  if (m1 > 1 && m1 < 5) return forms[1];
+  if (m1 === 1) return forms[0];
+  return forms[2];
+}
+
+let audioCtx = null;
+function initAudio(){ if(!audioCtx){ try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){} } }
+function beep(freq, dur=.14, type="sine", vol=.08){
+  if(!state.settings.sound || !audioCtx) return;
+  try{
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = type; o.frequency.value = freq;
+    const t = audioCtx.currentTime;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur + .03);
+  }catch(e){}
+}
+function sfxOk(){ beep(720,.1); setTimeout(()=>beep(900,.12),90); }
+function sfxErr(){ beep(180,.24,"triangle",.12); }
+function sfxClick(){ beep(440,.05,"triangle",.06); }
+function sfxWin(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.18),i*110)); }
+function speak(text){
+  if(!state.settings.voice || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "ru-RU";
+    u.rate = 0.92;
+    u.pitch = 1.08;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+const state = {
+  selectedLetters: new Set(COMMON_LETTERS),
+  mode: "mix",
+  difficulty: "medium",
+  rounds: 10,
+  settings: { showWord:false, voice:true, sound:true },
+  queue: [],
+  idx: 0,
+  current: null,
+  roundSolved: false,
+  foundIds: new Set(),
+  right: 0,
+  mistakes: 0,
+  roundAttempts: 0
+};
+
+function availableLetters(){
+  const selected = ALL_LETTERS.filter(l => state.selectedLetters.has(l));
+  return selected.filter(l => WORDS[l] && WORDS[l].length >= 2);
+}
+
+function showStartScreen(){
+  state.current = null;
+  backBtn.classList.add("hidden");
+  scoreEl.classList.add("hidden");
+
+  if (state.selectedLetters.size === 0) COMMON_LETTERS.forEach(l => state.selectedLetters.add(l));
+
+  gameEl.innerHTML = `
+    <div class="game-header">
+      <h2>🔤 Буква и картинка</h2>
+      <div class="subtitle">Простая игра для шестилеток: ищем картинки, узнаём буквы и играем без перегруза.</div>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <div class="cat-actions" style="justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="field-label" style="margin-bottom:0;">Какие буквы тренируем</div>
+          <div class="cat-actions">
+            <button class="mini-btn" id="allLetters">Все</button>
+            <button class="mini-btn" id="commonLetters">Частые</button>
+            <button class="mini-btn" id="noneLetters">Очистить</button>
+          </div>
+        </div>
+        <div class="letters-grid" id="lettersGrid"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Режим игры</div>
+        <div class="pills" id="modeRow">
+          <button class="pill" data-mode="find">🖼️ Найди картинки</button>
+          <button class="pill" data-mode="choose">🔤 Найди букву</button>
+          <button class="pill" data-mode="yesno">✅ Да или нет</button>
+          <button class="pill" data-mode="mix">🎲 Смешать</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Сложность</div>
+        <div class="pills" id="difficultyRow">
+          <button class="pill easy" data-d="easy">🌱 Легко</button>
+          <button class="pill medium" data-d="medium">🔥 Средне</button>
+          <button class="pill hard" data-d="hard">💎 Сложно</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Сколько раундов</div>
+        <div class="pills" id="roundsRow">
+          <button class="pill" data-r="5">5</button>
+          <button class="pill" data-r="10">10</button>
+          <button class="pill" data-r="15">15</button>
+          <button class="pill" data-r="0">Все</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Настройки</div>
+        <div class="setting-row">
+          <label for="s-showWord">Показывать подписи к картинкам</label>
+          <label class="switch"><input type="checkbox" id="s-showWord"><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <label for="s-voice">Озвучка букв и слов</label>
+          <label class="switch"><input type="checkbox" id="s-voice" checked><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <label for="s-sound">Звуки игры</label>
+          <label class="switch"><input type="checkbox" id="s-sound" checked><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <div class="hint-box" id="modeHint"></div>
+
+      <button class="btn-main" id="startBtn">Начать →</button>
+    </div>
+  `;
+
+  const lettersGrid = $("lettersGrid");
+  ALL_LETTERS.forEach(l => {
+    const el = document.createElement("div");
+    el.className = "letter-pick" + (state.selectedLetters.has(l) ? " on" : "") + (RARE.has(l) ? " rare" : "");
+    el.textContent = l;
+    el.dataset.l = l;
+    el.addEventListener("click", () => {
+      if(state.selectedLetters.has(l)){ state.selectedLetters.delete(l); el.classList.remove("on"); }
+      else { state.selectedLetters.add(l); el.classList.add("on"); }
+      updateStartButton(); updateModeHint(); sfxClick();
+    });
+    lettersGrid.appendChild(el);
+  });
+
+  $("allLetters").addEventListener("click", () => {
+    state.selectedLetters = new Set(ALL_LETTERS);
+    lettersGrid.querySelectorAll('.letter-pick').forEach(el => el.classList.add('on'));
+    updateStartButton(); updateModeHint(); sfxClick();
+  });
+  $("commonLetters").addEventListener("click", () => {
+    state.selectedLetters = new Set(COMMON_LETTERS);
+    lettersGrid.querySelectorAll('.letter-pick').forEach(el => el.classList.toggle('on', state.selectedLetters.has(el.dataset.l)));
+    updateStartButton(); updateModeHint(); sfxClick();
+  });
+  $("noneLetters").addEventListener("click", () => {
+    state.selectedLetters.clear();
+    lettersGrid.querySelectorAll('.letter-pick').forEach(el => el.classList.remove('on'));
+    updateStartButton(); updateModeHint(); sfxClick();
+  });
+
+  $("modeRow").querySelectorAll('.pill').forEach(btn => btn.addEventListener('click', () => {
+    $("modeRow").querySelectorAll('.pill').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    state.mode = btn.dataset.mode;
+    updateModeHint(); sfxClick();
+  }));
+  $("difficultyRow").querySelectorAll('.pill').forEach(btn => btn.addEventListener('click', () => {
+    $("difficultyRow").querySelectorAll('.pill').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    state.difficulty = btn.dataset.d;
+    updateModeHint(); sfxClick();
+  }));
+  $("roundsRow").querySelectorAll('.pill').forEach(btn => btn.addEventListener('click', () => {
+    $("roundsRow").querySelectorAll('.pill').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    state.rounds = parseInt(btn.dataset.r,10);
+    updateModeHint(); sfxClick();
+  }));
+
+  $("s-showWord").checked = state.settings.showWord;
+  $("s-voice").checked = state.settings.voice;
+  $("s-sound").checked = state.settings.sound;
+  $("s-showWord").addEventListener('change', e => state.settings.showWord = e.target.checked);
+  $("s-voice").addEventListener('change', e => state.settings.voice = e.target.checked);
+  $("s-sound").addEventListener('change', e => state.settings.sound = e.target.checked);
+
+  const modeBtn = document.querySelector(`[data-mode="${state.mode}"]`);
+  if(modeBtn) modeBtn.classList.add('on');
+  const diffBtn = document.querySelector(`[data-d="${state.difficulty}"]`);
+  if(diffBtn) diffBtn.classList.add('on');
+  const roundsBtn = document.querySelector(`[data-r="${state.rounds}"]`);
+  if(roundsBtn) roundsBtn.classList.add('on');
+
+  $("startBtn").addEventListener('click', startGame);
+  updateStartButton();
+  updateModeHint();
+}
+
+function updateStartButton(){
+  const btn = $("startBtn");
+  if(!btn) return;
+  const n = availableLetters().length;
+  btn.disabled = n === 0;
+  btn.textContent = n === 0 ? 'Выбери хотя бы одну букву' : `Начать (${n} ${wordForm(n,['буква','буквы','букв'])}) →`;
+}
+
+function updateModeHint(){
+  const box = $("modeHint"); if(!box) return;
+  const n = availableLetters().length;
+  const diff = DIFFICULTY_INFO[state.difficulty];
+  const texts = {
+    find:`<b>${MODE_INFO.find.label}.</b> В раунде будет ${diff.cards} картинок, из них ${diff.answers} подходят к букве.`,
+    choose:`<b>${MODE_INFO.choose.label}.</b> Показывается одна картинка, а ребёнок выбирает букву из ${diff.letters} вариантов.`,
+    yesno:`<b>${MODE_INFO.yesno.label}.</b> Показываются буква и картинка. Нужно ответить: подходят они друг другу или нет.`,
+    mix:`<b>${MODE_INFO.mix.label}.</b> Игра сама чередует режимы, чтобы ребёнку не было скучно.`
+  };
+  const extra = n === 0
+    ? `<br><span style="color:#B91C1C">Сейчас буквы не выбраны.</span>`
+    : `<br>Выбрано ${n} ${wordForm(n,['буква','буквы','букв'])}.`;
+  box.innerHTML = texts[state.mode] + extra;
+}
+
+function startGame(){
+  const letters = availableLetters();
+  if (!letters.length) return showStartScreen();
+
+  backBtn.classList.remove('hidden');
+  scoreEl.classList.remove('hidden');
+  state.idx = 0;
+  state.right = 0;
+  state.mistakes = 0;
+
+  state.queue = shuffle(letters);
+  if(state.rounds === 0){
+    const minNeed = state.mode === 'mix' ? 6 : (state.mode === 'yesno' ? 8 : 6);
+    while(state.queue.length < minNeed) state.queue = state.queue.concat(shuffle(letters));
+  }
+  if(state.rounds > 0){
+    while(state.queue.length < state.rounds) state.queue = state.queue.concat(shuffle(letters));
+    state.queue = state.queue.slice(0, state.rounds);
+  }
+
+  renderRound();
+}
+
+function modeForRound(index){
+  if(state.mode !== 'mix') return state.mode;
+  const cycle = ['find','choose','yesno'];
+  return cycle[index % cycle.length];
+}
+
+function makeRound(letter, mode){
+  const diff = DIFFICULTY_INFO[state.difficulty];
+  if(mode === 'find') return makeFindRound(letter, diff);
+  if(mode === 'choose') return makeChooseRound(letter, diff);
+  return makeYesNoRound(letter);
+}
+
+function makeFindRound(letter, diff){
+  const correctCount = Math.min(diff.answers, WORDS[letter].length);
+  const correctWords = shuffle(WORDS[letter]).slice(0, correctCount).map(([emoji, word]) => ({emoji, word, letter, correct:true}));
+  const allOther = [];
+  ALL_LETTERS.forEach(l => { if(l !== letter) WORDS[l].forEach(([emoji, word]) => allOther.push({emoji, word, letter:l, correct:false})); });
+  const wrongCount = diff.cards - correctCount;
+  const wrongWords = shuffle(allOther).slice(0, wrongCount);
+  return { type:'find', letter, targetCount: correctCount, cards: shuffle(correctWords.concat(wrongWords)), solvedCount:0 };
+}
+
+function makeChooseRound(letter, diff){
+  const picture = pick(WORDS[letter]);
+  const others = shuffle(ALL_LETTERS.filter(l => state.selectedLetters.has(l) && l !== letter));
+  const optionCount = clamp(diff.letters, 2, Math.max(2, others.length + 1));
+  const options = shuffle([letter].concat(others.slice(0, optionCount - 1)));
+  return { type:'choose', letter, picture:{emoji:picture[0], word:picture[1]}, options };
+}
+
+function makeYesNoRound(letter){
+  const shouldMatch = Math.random() < 0.5;
+  let pictureLetter = letter;
+  if(!shouldMatch){
+    const otherLetters = ALL_LETTERS.filter(l => state.selectedLetters.has(l) && l !== letter);
+    pictureLetter = otherLetters.length ? pick(otherLetters) : pick(ALL_LETTERS.filter(l => l !== letter));
+  }
+  const picture = pick(WORDS[pictureLetter]);
+  return { type:'yesno', letter, picture:{emoji:picture[0], word:picture[1]}, isMatch: shouldMatch };
+}
+
+function renderRound(){
+  state.roundSolved = false;
+  state.roundAttempts = 0;
+  state.foundIds = new Set();
+  const letter = state.queue[state.idx];
+  const mode = modeForRound(state.idx);
+  state.current = makeRound(letter, mode);
+
+  const total = state.queue.length;
+  const pct = (state.idx / total) * 100;
+  const info = MODE_INFO[mode];
+
+  gameEl.innerHTML = `
+    <div class="game-header">
+      <h2>${info.icon} ${info.label}</h2>
+      <div class="subtitle">Раунд ${state.idx + 1} из ${total}. ${roundInstruction()}</div>
+    </div>
+
+    <div class="panel">
+      <div class="progress">
+        <div class="bar"><span style="width:${pct}%"></span></div>
+        <div>Выполнено ${state.idx} / ${total}</div>
+      </div>
+      <div class="mode-chip">${info.icon} ${info.label}</div>
+      <div id="roundContent"></div>
+      <div class="status" id="status"></div>
+      <div class="actions">
+        <button class="btn-main" id="nextBtn" disabled>${state.idx === total - 1 ? 'Финиш 🏁' : 'Дальше →'}</button>
+        <button class="btn-secondary" id="menuBtn">⚙️ Настройки</button>
+      </div>
+    </div>
+  `;
+
+  $("nextBtn").addEventListener('click', nextRound);
+  $("menuBtn").addEventListener('click', showStartScreen);
+  renderRoundBody();
+  updateStatus();
+  speakRoundIntro();
+}
+
+function roundInstruction(){
+  if(state.current.type === 'find') return `Найди картинки на букву «${state.current.letter}».`;
+  if(state.current.type === 'choose') return `Посмотри на картинку и выбери подходящую букву.`;
+  return `Посмотри на букву и картинку и ответь: подходят они друг другу или нет.`;
+}
+
+function speakRoundIntro(){
+  if(state.current.type === 'find') speak(`Найди картинки на букву ${state.current.letter}`);
+  else if(state.current.type === 'choose') speak(`Какая буква подходит к картинке ${state.current.picture.word}`);
+  else speak(`Буква ${state.current.letter}. Подходит ли картинка ${state.current.picture.word}`);
+}
+
+function renderRoundBody(){
+  const wrap = $("roundContent");
+  if(state.current.type === 'find'){
+    wrap.innerHTML = `
+      <div class="hero-letter"><span>${state.current.letter}</span></div>
+      <div class="grid" id="findGrid" style="--cols:${gridCols(state.current.cards.length)};--cols-m:${gridColsMobile(state.current.cards.length)}"></div>
+    `;
+    const grid = $("findGrid");
+    state.current.cards.forEach((card, i) => {
+      const el = document.createElement('div');
+      el.className = 'card' + (state.settings.showWord ? ' show-word' : '');
+      el.dataset.idx = i;
+      el.innerHTML = `<div class="emoji">${card.emoji}</div><div class="word">${escapeHtml(card.word)}</div>`;
+      el.addEventListener('click', () => handleFindPick(i, el));
+      grid.appendChild(el);
+    });
+  } else if(state.current.type === 'choose'){
+    wrap.innerHTML = `
+      <div class="picture-big"><div class="emoji">${state.current.picture.emoji}</div></div>
+      <div class="picture-word">${state.settings.showWord ? escapeHtml(capitalize(state.current.picture.word)) : 'Что это? Выбери букву.'}</div>
+      <div class="letter-options" id="chooseGrid" style="--cols:${Math.min(state.current.options.length,4)};--cols-m:${Math.min(state.current.options.length,2)}"></div>
+    `;
+    const grid = $("chooseGrid");
+    state.current.options.forEach(letter => {
+      const btn = document.createElement('button');
+      btn.className = 'letter-btn';
+      btn.textContent = letter;
+      btn.addEventListener('click', () => handleChoosePick(letter, btn));
+      grid.appendChild(btn);
+    });
+  } else {
+    wrap.innerHTML = `
+      <div class="hero-letter"><span>${state.current.letter}</span></div>
+      <div class="picture-big"><div class="emoji">${state.current.picture.emoji}</div></div>
+      <div class="picture-word">${state.settings.showWord ? escapeHtml(capitalize(state.current.picture.word)) : 'Подходит ли картинка к этой букве?'}</div>
+      <div class="choice-row">
+        <button class="yesno-btn" id="yesBtn">✅ Да</button>
+        <button class="yesno-btn" id="noBtn">❌ Нет</button>
+      </div>
+    `;
+    $("yesBtn").addEventListener('click', () => handleYesNoPick(true, $("yesBtn")));
+    $("noBtn").addEventListener('click', () => handleYesNoPick(false, $("noBtn")));
+  }
+}
+
+function gridCols(n){ if(n <= 6) return 3; if(n <= 9) return 3; if(n <= 12) return 4; return 4; }
+function gridColsMobile(n){ if(n <= 6) return 3; if(n <= 12) return 3; return 4; }
+function capitalize(text){ return text ? text.charAt(0).toUpperCase() + text.slice(1) : ''; }
+
+function handleFindPick(index, el){
+  if(state.roundSolved || state.foundIds.has(index)) return;
+  const card = state.current.cards[index];
+  state.roundAttempts++;
+  if(card.correct){
+    state.foundIds.add(index);
+    state.current.solvedCount = state.foundIds.size;
+    el.classList.add('correct');
+    const word = el.querySelector('.word'); if(word) word.classList.add('visible');
+    state.right++; sfxOk(); speak(card.word);
+    if(state.foundIds.size === state.current.targetCount){ solveRound(`Нашли все картинки на букву «${state.current.letter}»!`); }
+    else updateStatus();
+  } else {
+    state.mistakes++; sfxErr();
+    el.classList.add('wrong'); setTimeout(() => el.classList.remove('wrong'), 450);
+    updateStatus('Попробуй ещё. Ищи другие картинки.');
+  }
+}
+
+function handleChoosePick(letter, btn){
+  if(state.roundSolved) return;
+  state.roundAttempts++;
+  if(letter === state.current.letter){
+    btn.classList.add('correct');
+    state.right++; sfxOk(); speak(state.current.picture.word);
+    solveRound(`Да! Это «${state.current.picture.word}», буква «${state.current.letter}».`);
+  } else {
+    btn.classList.add('wrong');
+    state.mistakes++; sfxErr();
+    setTimeout(() => btn.classList.remove('wrong'), 450);
+    updateStatus('Пока не то. Попробуй ещё.');
+  }
+}
+
+function handleYesNoPick(answer, btn){
+  if(state.roundSolved) return;
+  state.roundAttempts++;
+  if(answer === state.current.isMatch){
+    btn.classList.add('good');
+    state.right++; sfxOk();
+    const tail = state.current.isMatch
+      ? `Да, «${state.current.picture.word}» подходит к букве «${state.current.letter}».`
+      : `Верно, «${state.current.picture.word}» не подходит к букве «${state.current.letter}».`;
+    solveRound(tail);
+  } else {
+    btn.classList.add('bad');
+    state.mistakes++; sfxErr();
+    setTimeout(() => btn.classList.remove('bad'), 450);
+    updateStatus('Подумай ещё и выбери другой ответ.');
+  }
+}
+
+function updateStatus(customText){
+  const s = $("status"); if(!s) return;
+  if(customText){ s.textContent = customText; s.className = 'status warn'; return; }
+  if(state.current.type === 'find'){
+    const found = state.foundIds.size;
+    const total = state.current.targetCount;
+    s.textContent = `Найдено ${found} из ${total}`;
+    s.className = 'status';
+  } else if(state.current.type === 'choose'){
+    s.textContent = 'Выбери правильную букву.';
+    s.className = 'status';
+  } else {
+    s.textContent = 'Ответь: да или нет.';
+    s.className = 'status';
+  }
+}
+
+function solveRound(message){
+  state.roundSolved = true;
+  const nextBtn = $("nextBtn"); if(nextBtn) nextBtn.disabled = false;
+  const s = $("status");
+  if(s){ s.textContent = message; s.className = 'status good'; }
+  sfxWin();
+  if(state.current.type === 'choose'){
+    document.querySelectorAll('.letter-btn').forEach(btn => btn.disabled = true);
+  }
+  if(state.current.type === 'yesno'){
+    $("yesBtn").disabled = true; $("noBtn").disabled = true;
+  }
+}
+
+function nextRound(){
+  if(state.idx >= state.queue.length - 1) finishGame();
+  else { state.idx++; renderRound(); }
+}
+
+function finishGame(){
+  const total = state.queue.length;
+  const points = state.right * 10;
+  addScore(points);
+
+  let stars = '⭐';
+  const accuracy = total ? state.right / (state.right + Math.max(0, state.mistakes)) : 1;
+  if(accuracy > .85 && state.mistakes <= total/2) stars = '⭐⭐⭐';
+  else if(accuracy > .6) stars = '⭐⭐';
+
+  gameEl.innerHTML = `
+    <div class="panel">
+      <div class="result-screen">
+        <div class="big">🏆</div>
+        <h2>Молодец!</h2>
+        <p>Игра закончилась. Можно сыграть ещё раз или поменять буквы.</p>
+        <div class="stars">${stars}</div>
+        <div class="result-summary">
+          <div class="summary-box"><strong>${total}</strong><span>${wordForm(total,['раунд','раунда','раундов'])}</span></div>
+          <div class="summary-box"><strong>${state.right}</strong><span>успешных ответов</span></div>
+          <div class="summary-box"><strong>${state.mistakes}</strong><span>ошибок</span></div>
+          <div class="summary-box"><strong>+${points}</strong><span>очков</span></div>
+        </div>
+        <div class="actions">
+          <button class="btn-main" id="againBtn">Ещё раз 🔄</button>
+          <button class="btn-secondary" id="menuBtn">⚙️ Настройки</button>
+        </div>
+      </div>
+    </div>
+  `;
+  sfxWin();
+  $("againBtn").addEventListener('click', startGame);
+  $("menuBtn").addEventListener('click', showStartScreen);
+}
+
+backBtn.addEventListener('click', showStartScreen);
+document.addEventListener('click', initAudio, { once:true });
+showStartScreen();
+</script>
+
+<script src="../assets/menu-data.js"></script>
+<script src="../assets/menu-drawer.js"></script>
+</body>
+</html>

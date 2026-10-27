@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Что лишнее? — NeuroX</title>
+<style>
+  :root{--picture-atlas:url("../assets/different-illustrations.webp");--blue:#1E3F8A;--blue-soft:#EAF0FF;--orange:#FF6A00;--orange-soft:#FFF3E8;--ink:#202B42;--muted:#617087;--border:#DCE5F1;--bg:#F6F8FC;--green:#238450;--green-bg:#E9F7EF;--warn:#A45118;--warn-bg:#FFF3E9}
+  *{box-sizing:border-box}
+  html{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+  body{margin:0;background:var(--bg);color:var(--ink);padding:14px 14px 40px;-webkit-tap-highlight-color:transparent}
+  button,input{font:inherit}
+  button{cursor:pointer}
+  button:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+  .wrap{max-width:920px;margin:0 auto}
+  .app-head{display:flex;align-items:center;gap:14px;padding:14px 18px;background:white;border:1px solid var(--border);border-radius:20px;margin-bottom:18px;box-shadow:0 4px 14px #12346509}
+  .back{border:0;border-radius:12px;background:var(--blue-soft);color:var(--blue);width:44px;height:44px;font-size:25px;font-weight:800;flex:0 0 auto}
+  h1{font-size:clamp(21px,4vw,27px);margin:0;color:var(--blue);line-height:1.15}
+  .app-head small{display:block;color:var(--muted);font-weight:600;margin-top:4px}
+  .panel{background:white;border:1px solid var(--border);border-radius:24px;padding:clamp(16px,3.2vw,28px);box-shadow:0 7px 26px #132E4B0A;margin-bottom:16px}
+  h2{font-size:21px;color:var(--blue);margin:0 0 9px}
+  .intro{line-height:1.55;color:var(--muted);margin:0 0 16px}
+  .section{margin-top:24px}
+  .section:first-of-type{margin-top:10px}
+  .section-title{font-size:15px;font-weight:800;color:var(--ink);margin:0 0 12px}
+  .choices{display:flex;flex-wrap:wrap;gap:8px}
+  .choice,.mini,.ghost{border:2px solid var(--border);background:#fff;color:var(--blue);border-radius:13px;font-weight:750;padding:11px 15px;min-height:44px;transition:background .15s,border-color .15s,transform .15s}
+  .choice:hover,.mini:hover,.ghost:hover{border-color:var(--orange)}
+  .choice.selected{background:var(--blue);color:white;border-color:var(--blue)}
+  .choice .count{opacity:.68;font-size:12px;margin-left:5px}
+  .mini{padding:7px 12px;min-height:36px;font-size:13px}
+  .topic-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;margin-bottom:11px}
+  .topic-head .section-title{margin:0}
+  .topic-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:9px}
+  .topic{display:flex;align-items:center;gap:10px;border:1px solid var(--border);background:#FAFCFF;border-radius:13px;padding:12px;cursor:pointer;font-size:14px;font-weight:700;min-width:0}
+  .topic input{width:19px;height:19px;accent-color:var(--blue);flex:0 0 auto}
+  .topic-name{flex:1;overflow-wrap:anywhere}
+  .topic .count{font-size:12px;color:var(--muted)}
+  .option-list{display:grid;gap:10px}
+  .option{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.35;cursor:pointer}
+  .option input{width:19px;height:19px;accent-color:var(--blue);margin:1px 0 0;flex:0 0 auto}
+  .option small{display:block;color:var(--muted);margin-top:3px}
+  .notice{border-radius:14px;background:var(--blue-soft);color:#253E74;padding:12px 14px;font-size:14px;line-height:1.5;margin-top:17px}
+  .primary{padding:14px 23px;border:0;background:var(--orange);color:#fff;font-weight:800;font-size:17px;border-radius:14px;min-height:50px}
+  .primary:disabled{background:#C6D0DD;cursor:not-allowed}
+  .primary:not(:disabled):hover{background:#E85D00}
+  .start{width:100%;margin-top:22px}
+  .meta{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--muted);font-size:14px;font-weight:750;margin-bottom:12px}
+  .track{height:9px;background:var(--blue-soft);border-radius:999px;overflow:hidden;margin-bottom:20px}
+  .fill{background:var(--orange);height:100%;width:0;transition:width .2s}
+  .question{text-align:center;font-weight:850;color:var(--blue);font-size:clamp(20px,4.8vw,26px);line-height:1.25;margin:8px 0 5px}
+  .question-sub{text-align:center;color:var(--muted);font-size:14px;line-height:1.4;margin:0 0 22px}
+  .game-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:670px;margin:0 auto}
+  @media(min-width:690px){.game-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}}
+  .item{border:3px solid var(--border);background:#F9FBFF;border-radius:19px;min-height:144px;aspect-ratio:1/1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;padding:9px 5px;transition:border .15s,background .15s,transform .15s;width:100%;color:var(--ink)}
+  .item:not(:disabled):hover{border-color:var(--orange);transform:translateY(-2px)}
+  .item:disabled{cursor:default;opacity:1}
+  .item .picture{width:clamp(76px,17vw,102px);height:clamp(76px,17vw,102px);flex:0 0 auto;display:flex;align-items:center;justify-content:center;background-repeat:no-repeat;background-size:cover}
+  .item .picture.illustration{background-image:var(--picture-atlas);background-size:1500% 1800%}
+  .item .picture.letter{font-size:clamp(51px,10vw,76px);font-weight:850;color:var(--blue)}
+  .item .word{font-size:clamp(12px,2.1vw,15px);font-weight:750;line-height:1.2;text-align:center;overflow-wrap:anywhere;max-width:100%}
+  .item.nolabel .word{display:none}
+  .item.try-again{border-color:#FF9F5A;background:var(--warn-bg)}
+  .item.correct{border-color:var(--green);background:var(--green-bg)}
+  .item.intended{border-color:var(--green);background:var(--green-bg)}
+  .status{margin:21px auto 0;border-radius:15px;background:var(--blue-soft);padding:14px 16px;max-width:740px;min-height:56px;font-weight:700;line-height:1.5;text-align:center;color:var(--blue)}
+  .status.success{background:var(--green-bg);color:var(--green)}
+  .status.retry{background:var(--warn-bg);color:var(--warn)}
+  .hint{display:block;margin:12px auto 0;max-width:740px;padding:14px;border:1px dashed #D59B55;border-radius:14px;background:#FFF9EF;color:#714111;font-size:15px;line-height:1.45;text-align:center}
+  .reason{max-width:740px;margin:12px auto 0;padding:14px 16px;border-left:4px solid var(--orange);border-radius:12px;background:#FFF7F0;line-height:1.5}
+  .controls{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:19px}
+  .controls .primary{min-width:170px}
+  #hintBtn{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+  .controls .ghost{min-height:50px}
+  .teacher-action{margin:12px auto 0;display:block;border:0;background:transparent;color:var(--blue);text-decoration:underline;font-size:13px;font-weight:750;padding:9px 15px}
+  .subtle{font-size:13px;color:var(--muted);margin-top:15px;line-height:1.5;text-align:center}
+  .result{text-align:center}
+  .result .medal{width:68px;height:68px;margin:10px auto;display:block;color:#EFAD37}
+  .result h2{font-size:26px;margin-bottom:15px}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;text-align:left;margin:20px auto;max-width:610px}
+  .stat{border-radius:15px;padding:15px;background:#F5F8FC;border:1px solid var(--border)}
+  .stat strong{display:block;font-size:27px;color:var(--blue);margin-bottom:6px}
+  .stat span{color:var(--muted);line-height:1.4;font-size:13px;font-weight:700}
+  .result-note{color:var(--muted);line-height:1.55;max-width:650px;margin:14px auto}
+  [hidden]{display:none!important}
+  @media(max-width:470px){body{padding:9px 9px 24px}.app-head{padding:11px 12px}.item{border-radius:14px;min-height:126px}.topic-list{grid-template-columns:repeat(2,minmax(0,1fr))}.topic{padding:10px 8px;gap:6px;font-size:12.5px}.stat{padding:12px}.stats{gap:8px}.controls .primary{width:100%}}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+<link rel="stylesheet" href="../assets/menu-drawer.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="app-head">
+    <button class="back" id="backBtn" aria-label="Вернуться назад" title="Назад">←</button>
+    <div><h1 style="display:flex;align-items:center;gap:10px"><svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#1E3F8A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span>Что лишнее?</span></h1><small>Замечаем общее, сравниваем и объясняем</small></div>
+  </header>
+  <main id="game"></main>
+</div>
+<script>
+'use strict';
+// Банк иллюстрированных заданий. Каждый набор содержит 3 объекта с общим признаком
+// и один отличающийся. Все изображения собраны в один локальный атлас без интернета.
+const BANK = [{"topic":"Еда","level":"easy","rule":"Фрукты","reason":"Огурец не фрукт. Остальные — фрукты.","items":[{"label":"яблоко","pic":0},{"label":"груша","pic":1},{"label":"банан","pic":2},{"label":"огурец","pic":3}]},{"topic":"Еда","level":"easy","rule":"Фрукты","reason":"Морковь не фрукт. Остальные — фрукты.","items":[{"label":"апельсин","pic":4},{"label":"персик","pic":5},{"label":"ананас","pic":6},{"label":"морковь","pic":7}]},{"topic":"Еда","level":"easy","rule":"Овощи","reason":"Виноград не овощ. Остальные — овощи.","items":[{"label":"морковь","pic":7},{"label":"огурец","pic":3},{"label":"брокколи","pic":8},{"label":"виноград","pic":9}]},{"topic":"Еда","level":"easy","rule":"Овощи","reason":"Груша не овощ. Остальные — овощи.","items":[{"label":"картофель","pic":10},{"label":"лук","pic":11},{"label":"перец","pic":12},{"label":"груша","pic":1}]},{"topic":"Еда","level":"easy","rule":"Напитки","reason":"Хлеб не напиток. Остальное можно пить.","items":[{"label":"молоко","pic":13},{"label":"сок","pic":14},{"label":"чай","pic":15},{"label":"хлеб","pic":16}]},{"topic":"Еда","level":"easy","rule":"Сладости","reason":"Суп не сладость. Остальное — сладости.","items":[{"label":"конфета","pic":17},{"label":"печенье","pic":18},{"label":"шоколад","pic":19},{"label":"суп","pic":20}]},{"topic":"Еда","level":"medium","rule":"Выпечка","reason":"Сыр не выпечка. Остальное выпекают из теста.","items":[{"label":"батон","pic":21},{"label":"круассан","pic":22},{"label":"крендель","pic":23},{"label":"сыр","pic":24}]},{"topic":"Еда","level":"medium","rule":"Напитки, которые обычно пьют тёплыми","reason":"Лимонад обычно пьют холодным. Чай, кофе и какао часто пьют тёплыми.","items":[{"label":"чай","pic":15},{"label":"кофе","pic":25},{"label":"какао","pic":26},{"label":"лимонад","pic":27}]},{"topic":"Еда","level":"medium","rule":"Еда из молока","reason":"Макароны не делают из молока. Остальное — молочные продукты.","items":[{"label":"сыр","pic":24},{"label":"сливочное масло","pic":28},{"label":"мороженое","pic":29},{"label":"макароны","pic":30}]},{"topic":"Еда","level":"hard","rule":"Можно есть сырым без приготовления","reason":"Сырую картошку обычно не едят. Остальные продукты можно есть сырыми.","items":[{"label":"яблоко","pic":0},{"label":"огурец","pic":3},{"label":"морковь","pic":7},{"label":"картофель","pic":10}]},{"topic":"Еда","level":"hard","rule":"Едят ложкой","reason":"Хлеб обычно едят руками. Суп, кашу и мороженое в креманке удобно есть ложкой.","items":[{"label":"суп","pic":20},{"label":"каша","pic":31},{"label":"мороженое","pic":32},{"label":"хлеб","pic":16}]},{"topic":"Еда","level":"hard","rule":"Продукты, которые получают от животных","reason":"Морковь растёт на грядке. Молоко, сыр и яйца получают от животных.","items":[{"label":"молоко","pic":13},{"label":"сыр","pic":24},{"label":"яйцо","pic":33},{"label":"морковь","pic":7}]},{"topic":"Еда","level":"hard","rule":"Готовят из теста","reason":"Салат не готовят из теста.","items":[{"label":"блины","pic":34},{"label":"пельмени","pic":35},{"label":"пицца","pic":36},{"label":"салат","pic":37}]},{"topic":"Животные","level":"easy","rule":"Домашние животные","reason":"Лиса — дикое животное. Остальные живут рядом с человеком.","items":[{"label":"кошка","pic":38},{"label":"собака","pic":39},{"label":"корова","pic":40},{"label":"лиса","pic":41}]},{"topic":"Животные","level":"easy","rule":"Птицы","reason":"Кошка не птица. Остальные — птицы.","items":[{"label":"утка","pic":42},{"label":"сова","pic":43},{"label":"попугай","pic":44},{"label":"кошка","pic":38}]},{"topic":"Животные","level":"easy","rule":"Насекомые","reason":"Паук не насекомое. Остальные — насекомые.","items":[{"label":"пчела","pic":45},{"label":"божья коровка","pic":46},{"label":"бабочка","pic":47},{"label":"паук","pic":48}]},{"topic":"Животные","level":"easy","rule":"Рыбы","reason":"Дельфин не рыба. Остальные — рыбы.","items":[{"label":"акула","pic":49},{"label":"рыба-клоун","pic":50},{"label":"карась","pic":51},{"label":"дельфин","pic":52}]},{"topic":"Животные","level":"easy","rule":"Звери","reason":"Крокодил — пресмыкающееся. Остальные — звери.","items":[{"label":"медведь","pic":53},{"label":"лиса","pic":41},{"label":"волк","pic":54},{"label":"крокодил","pic":55}]},{"topic":"Животные","level":"easy","rule":"Насекомые","reason":"Червяк не насекомое. Остальные — насекомые.","items":[{"label":"кузнечик","pic":56},{"label":"муравей","pic":57},{"label":"комар","pic":58},{"label":"червяк","pic":59}]},{"topic":"Животные","level":"medium","rule":"Домашние птицы","reason":"Воробей не домашняя птица.","items":[{"label":"курица","pic":60},{"label":"индюк","pic":61},{"label":"домашняя утка","pic":62},{"label":"воробей","pic":63}]},{"topic":"Животные","level":"medium","rule":"Морские млекопитающие","reason":"Акула — рыба. Кит, дельфин и тюлень — млекопитающие.","items":[{"label":"кит","pic":64},{"label":"дельфин","pic":52},{"label":"тюлень","pic":65},{"label":"акула","pic":49}]},{"topic":"Животные","level":"medium","rule":"Звери, покрытые шерстью","reason":"Черепаха покрыта панцирем, остальные — звери с шерстью.","items":[{"label":"кролик","pic":66},{"label":"белка","pic":67},{"label":"лиса","pic":41},{"label":"черепаха","pic":68}]},{"topic":"Животные","level":"medium","rule":"Птицы, которые могут летать","reason":"Пингвин не летает. Остальные птицы летают.","items":[{"label":"орёл","pic":69},{"label":"сова","pic":43},{"label":"попугай","pic":44},{"label":"пингвин","pic":70}]},{"topic":"Животные","level":"medium","rule":"Живут преимущественно в воде","reason":"Лисица живёт на суше. Остальные живут в воде.","items":[{"label":"дельфин","pic":52},{"label":"рыбка","pic":50},{"label":"осьминог","pic":71},{"label":"лиса","pic":41}]},{"topic":"Животные","level":"medium","rule":"Питаются растениями","reason":"Тигр — хищник. Корова, лошадь и коза питаются растениями.","items":[{"label":"корова","pic":40},{"label":"лошадь","pic":72},{"label":"коза","pic":73},{"label":"тигр","pic":74}]},{"topic":"Животные","level":"hard","rule":"Животные, которые вылупляются из яйца","reason":"Котёнок рождается живым. Цыплёнок, черепашка и утёнок вылупляются из яиц.","items":[{"label":"цыплёнок","pic":75},{"label":"черепашка","pic":68},{"label":"утёнок","pic":76},{"label":"котёнок","pic":38}]},{"topic":"Животные","level":"hard","rule":"Дикие кошачьи","reason":"Волк относится к псовым. Лев, тигр и леопард — кошачьи.","items":[{"label":"лев","pic":77},{"label":"тигр","pic":74},{"label":"леопард","pic":78},{"label":"волк","pic":54}]},{"topic":"Животные","level":"hard","rule":"Животные, которые дышат лёгкими","reason":"Рыба получает кислород жабрами. Дельфин, кит и тюлень дышат лёгкими.","items":[{"label":"дельфин","pic":52},{"label":"кит","pic":64},{"label":"тюлень","pic":65},{"label":"карась","pic":51}]},{"topic":"Животные","level":"hard","rule":"Птицы","reason":"Летучая мышь — млекопитающее, а не птица.","items":[{"label":"сова","pic":43},{"label":"орёл","pic":69},{"label":"попугай","pic":44},{"label":"летучая мышь","pic":79}]},{"topic":"Природа","level":"easy","rule":"Деревья","reason":"Роза — цветок на кустарнике, остальные — деревья.","items":[{"label":"дуб","pic":80},{"label":"ель","pic":81},{"label":"пальма","pic":82},{"label":"роза","pic":83}]},{"topic":"Природа","level":"easy","rule":"Цветы","reason":"Гриб не цветок. Остальные — цветы.","items":[{"label":"тюльпан","pic":84},{"label":"подсолнух","pic":85},{"label":"роза","pic":83},{"label":"гриб","pic":86}]},{"topic":"Природа","level":"easy","rule":"Времена года","reason":"Часы не время года.","items":[{"label":"зима","pic":87},{"label":"весна","pic":88},{"label":"лето","pic":89},{"label":"часы","pic":90}]},{"topic":"Природа","level":"easy","rule":"Части суток","reason":"Пятница не часть суток.","items":[{"label":"утро","pic":91},{"label":"день","pic":92},{"label":"ночь","pic":93},{"label":"пятница","pic":94}]},{"topic":"Природа","level":"easy","rule":"Растения","reason":"Камень не растение.","items":[{"label":"подсолнечник","pic":85},{"label":"сосна","pic":95},{"label":"кактус","pic":96},{"label":"камень","pic":97}]},{"topic":"Природа","level":"medium","rule":"Явления погоды","reason":"Стол не относится к погоде.","items":[{"label":"дождь","pic":98},{"label":"радуга","pic":99},{"label":"ветер","pic":100},{"label":"стол","pic":101}]},{"topic":"Природа","level":"medium","rule":"То, что растёт на деревьях","reason":"Морковь растёт в земле, не на дереве.","items":[{"label":"яблоко","pic":0},{"label":"груша","pic":1},{"label":"вишня","pic":102},{"label":"морковь","pic":7}]},{"topic":"Природа","level":"medium","rule":"То, что обычно видим на небе","reason":"Ракушка лежит на берегу или в воде, остальное можно увидеть на небе.","items":[{"label":"облако","pic":103},{"label":"радуга","pic":99},{"label":"луна","pic":93},{"label":"ракушка","pic":104}]},{"topic":"Природа","level":"hard","rule":"Что необходимо растению для роста","reason":"Карандаш не помогает растению расти. Вода, свет и почва необходимы многим растениям.","items":[{"label":"вода","pic":105},{"label":"свет","pic":106},{"label":"почва","pic":107},{"label":"карандаш","pic":108}]},{"topic":"Природа","level":"hard","rule":"Источники света","reason":"Зеркало отражает свет, но само его не излучает.","items":[{"label":"солнце","pic":106},{"label":"фонарик","pic":109},{"label":"свеча","pic":110},{"label":"зеркало","pic":111}]},{"topic":"Природа","level":"hard","rule":"Что бывает в природе без участия человека","reason":"Кирпич изготовлен человеком. Остальные встречаются в природе.","items":[{"label":"камень","pic":97},{"label":"ракушка","pic":104},{"label":"гриб","pic":86},{"label":"кирпич","pic":112}]},{"topic":"Природа","level":"hard","rule":"Живые организмы","reason":"Облако не живое. Цветок, гриб и бабочка — живые организмы.","items":[{"label":"цветок","pic":113},{"label":"гриб","pic":86},{"label":"бабочка","pic":47},{"label":"облако","pic":103}]},{"topic":"Природа","level":"hard","rule":"То, что может таять от тепла","reason":"Камень не тает при обычном нагревании. Снег, лёд и мороженое тают.","items":[{"label":"снег","pic":114},{"label":"лёд","pic":115},{"label":"мороженое","pic":29},{"label":"камень","pic":97}]},{"topic":"Транспорт","level":"easy","rule":"Наземный транспорт","reason":"Лодка передвигается по воде. Остальные едут по земле.","items":[{"label":"машина","pic":116},{"label":"автобус","pic":117},{"label":"поезд","pic":118},{"label":"лодка","pic":119}]},{"topic":"Транспорт","level":"easy","rule":"Водный транспорт","reason":"Вертолёт летает по воздуху. Остальные движутся по воде.","items":[{"label":"корабль","pic":120},{"label":"парусник","pic":121},{"label":"катер","pic":122},{"label":"вертолёт","pic":123}]},{"topic":"Транспорт","level":"easy","rule":"Воздушный транспорт","reason":"Велосипед не летает. Остальные летают.","items":[{"label":"самолёт","pic":124},{"label":"вертолёт","pic":123},{"label":"планёр","pic":125},{"label":"велосипед","pic":126}]},{"topic":"Транспорт","level":"easy","rule":"Транспорт","reason":"Шкаф не транспорт.","items":[{"label":"автобус","pic":117},{"label":"такси","pic":127},{"label":"трактор","pic":128},{"label":"шкаф","pic":129}]},{"topic":"Транспорт","level":"easy","rule":"Транспорт на рельсах","reason":"Автобус едет по дороге, остальные — по рельсам.","items":[{"label":"трамвай","pic":130},{"label":"электричка","pic":131},{"label":"метро","pic":132},{"label":"автобус","pic":117}]},{"topic":"Транспорт","level":"easy","rule":"Личный транспорт","reason":"Большой автобус обычно перевозит многих пассажиров, остальное чаще используют для личных поездок.","items":[{"label":"велосипед","pic":126},{"label":"самокат","pic":133},{"label":"автомобиль","pic":116},{"label":"рейсовый автобус","pic":117}]},{"topic":"Транспорт","level":"medium","rule":"Транспорт без двигателя","reason":"Мотоцикл имеет двигатель, остальные движутся силой человека.","items":[{"label":"велосипед","pic":126},{"label":"самокат","pic":133},{"label":"скейтборд","pic":134},{"label":"мотоцикл","pic":135}]},{"topic":"Транспорт","level":"medium","rule":"Машины специальной помощи","reason":"Такси не относится к экстренным службам.","items":[{"label":"скорая помощь","pic":136},{"label":"пожарная машина","pic":137},{"label":"полицейская машина","pic":138},{"label":"такси","pic":127}]},{"topic":"Транспорт","level":"medium","rule":"Грузовой транспорт","reason":"Легковая машина обычно перевозит пассажиров, остальные — грузы.","items":[{"label":"грузовик","pic":139},{"label":"фургон","pic":140},{"label":"трактор с прицепом","pic":141},{"label":"такси","pic":127}]},{"topic":"Транспорт","level":"medium","rule":"Транспорт для поездки по воде","reason":"Поезд не передвигается по воде.","items":[{"label":"парусник","pic":121},{"label":"каноэ","pic":142},{"label":"лодка","pic":119},{"label":"поезд","pic":118}]},{"topic":"Транспорт","level":"medium","rule":"Есть колёса","reason":"Парусник не имеет колёс для езды. Остальные катятся на колёсах.","items":[{"label":"велосипед","pic":126},{"label":"самокат","pic":133},{"label":"скейтборд","pic":134},{"label":"парусник","pic":121}]},{"topic":"Транспорт","level":"hard","rule":"Передвигаются по рельсам","reason":"Троллейбус едет по дороге и не нуждается в рельсах.","items":[{"label":"метро","pic":132},{"label":"трамвай","pic":143},{"label":"поезд","pic":131},{"label":"троллейбус","pic":144}]},{"topic":"Транспорт","level":"hard","rule":"Можно управлять, не имея двигателя","reason":"Автомобиль работает с помощью двигателя.","items":[{"label":"велосипед","pic":126},{"label":"самокат","pic":133},{"label":"скейтборд","pic":134},{"label":"автомобиль","pic":116}]},{"topic":"Транспорт","level":"hard","rule":"Для движения обычно нужна вода","reason":"Автобусу не нужна вода для движения. Остальные передвигаются по воде.","items":[{"label":"теплоход","pic":120},{"label":"парусник","pic":121},{"label":"каноэ","pic":142},{"label":"автобус","pic":117}]},{"topic":"Дом","level":"easy","rule":"Мебель","reason":"Ложка не мебель. Остальные — мебель.","items":[{"label":"стул","pic":145},{"label":"диван","pic":146},{"label":"кровать","pic":147},{"label":"ложка","pic":148}]},{"topic":"Дом","level":"easy","rule":"Посуда","reason":"Шапка не посуда.","items":[{"label":"тарелка","pic":149},{"label":"чашка","pic":25},{"label":"миска","pic":150},{"label":"шапка","pic":151}]},{"topic":"Дом","level":"easy","rule":"Предметы для уборки","reason":"Мяч не используют для уборки.","items":[{"label":"веник","pic":152},{"label":"губка","pic":153},{"label":"ведро","pic":154},{"label":"мяч","pic":155}]},{"topic":"Дом","level":"easy","rule":"Электроприборы","reason":"Подушка не электроприбор.","items":[{"label":"телевизор","pic":156},{"label":"компьютер","pic":157},{"label":"холодильник","pic":158},{"label":"подушка","pic":159}]},{"topic":"Дом","level":"easy","rule":"Письменные принадлежности","reason":"Миска не нужна для письма.","items":[{"label":"карандаш","pic":108},{"label":"ручка","pic":160},{"label":"мелок","pic":161},{"label":"миска","pic":150}]},{"topic":"Дом","level":"medium","rule":"Предметы, из которых пьют","reason":"Тарелка не предназначена для питья.","items":[{"label":"чашка","pic":25},{"label":"стакан","pic":162},{"label":"кружка","pic":163},{"label":"тарелка","pic":149}]},{"topic":"Дом","level":"medium","rule":"Приборы для еды","reason":"Кастрюля нужна для готовки, остальными едят.","items":[{"label":"ложка","pic":148},{"label":"вилка","pic":164},{"label":"столовый нож","pic":165},{"label":"кастрюля","pic":166}]},{"topic":"Дом","level":"medium","rule":"То, чем освещают комнату","reason":"Зеркало отражает свет. Лампа, свеча и фонарик освещают.","items":[{"label":"лампа","pic":167},{"label":"свеча","pic":110},{"label":"фонарик","pic":109},{"label":"зеркало","pic":111}]},{"topic":"Дом","level":"medium","rule":"Для приготовления еды на плите","reason":"Тарелку обычно используют для подачи еды, остальные — для готовки.","items":[{"label":"сковорода","pic":168},{"label":"кастрюля","pic":166},{"label":"сотейник","pic":169},{"label":"тарелка","pic":149}]},{"topic":"Дом","level":"medium","rule":"Хранение вещей","reason":"Лампа предназначена для освещения. Остальные — для хранения.","items":[{"label":"шкаф","pic":129},{"label":"корзина","pic":170},{"label":"коробка","pic":171},{"label":"лампа","pic":167}]},{"topic":"Дом","level":"hard","rule":"Что работает от электричества","reason":"Веник не нуждается в электричестве.","items":[{"label":"холодильник","pic":158},{"label":"телевизор","pic":156},{"label":"компьютер","pic":157},{"label":"веник","pic":152}]},{"topic":"Дом","level":"hard","rule":"Чем можно измерить","reason":"Кисть предназначена для рисования. Остальными измеряют.","items":[{"label":"линейка","pic":172},{"label":"весы","pic":173},{"label":"термометр","pic":174},{"label":"кисть","pic":175}]},{"topic":"Дом","level":"hard","rule":"Инструменты для ремонта","reason":"Чашка не инструмент для ремонта.","items":[{"label":"молоток","pic":176},{"label":"отвёртка","pic":177},{"label":"гаечный ключ","pic":178},{"label":"чашка","pic":25}]},{"topic":"Дом","level":"hard","rule":"Чем можно разрезать","reason":"Клей соединяет, а ножницы, нож и пила разрезают.","items":[{"label":"ножницы","pic":179},{"label":"нож","pic":165},{"label":"пила","pic":180},{"label":"клей","pic":181}]},{"topic":"Одежда","level":"easy","rule":"Обувь","reason":"Шарф — не обувь.","items":[{"label":"кроссовки","pic":182},{"label":"ботинки","pic":183},{"label":"туфли","pic":184},{"label":"шарф","pic":185}]},{"topic":"Одежда","level":"easy","rule":"Головные уборы","reason":"Перчатки надевают на руки. Остальное — на голову.","items":[{"label":"кепка","pic":186},{"label":"панама","pic":187},{"label":"шляпа","pic":188},{"label":"перчатки","pic":189}]},{"topic":"Одежда","level":"easy","rule":"Одежда","reason":"Чашка — посуда, а не одежда.","items":[{"label":"футболка","pic":190},{"label":"брюки","pic":191},{"label":"платье","pic":192},{"label":"чашка","pic":25}]},{"topic":"Одежда","level":"easy","rule":"Для ног","reason":"Варежки надевают на руки. Остальное — на ноги.","items":[{"label":"носки","pic":193},{"label":"кроссовки","pic":182},{"label":"сапоги","pic":194},{"label":"варежки","pic":195}]},{"topic":"Одежда","level":"medium","rule":"Для холодной погоды","reason":"Шорты обычно надевают в тёплую погоду. Остальное помогает согреться.","items":[{"label":"шарф","pic":185},{"label":"варежки","pic":195},{"label":"тёплая куртка","pic":196},{"label":"шорты","pic":197}]},{"topic":"Одежда","level":"medium","rule":"Для рук","reason":"Шапку надевают на голову, остальное — на руки.","items":[{"label":"перчатки","pic":189},{"label":"кольцо","pic":198},{"label":"наручные часы","pic":199},{"label":"шапка","pic":151}]},{"topic":"Одежда","level":"medium","rule":"Головные уборы","reason":"Ботинок — обувь. Остальное надевают на голову.","items":[{"label":"бейсболка","pic":186},{"label":"цилиндр","pic":188},{"label":"корона","pic":200},{"label":"ботинок","pic":183}]},{"topic":"Одежда","level":"hard","rule":"Одежда с рукавами","reason":"Шорты не имеют рукавов.","items":[{"label":"футболка","pic":190},{"label":"рубашка","pic":201},{"label":"куртка","pic":196},{"label":"шорты","pic":197}]},{"topic":"Занятия","level":"easy","rule":"Музыкальные инструменты","reason":"Кисточка нужна для рисования. Остальные — музыкальные инструменты.","items":[{"label":"гитара","pic":202},{"label":"барабан","pic":203},{"label":"пианино","pic":204},{"label":"кисточка","pic":175}]},{"topic":"Занятия","level":"easy","rule":"Для рисования","reason":"Мяч не принадлежность для рисования.","items":[{"label":"мелки","pic":205},{"label":"кисть","pic":175},{"label":"краски","pic":206},{"label":"мяч","pic":155}]},{"topic":"Занятия","level":"easy","rule":"Для спорта","reason":"Книга не спортивный инвентарь.","items":[{"label":"футбольный мяч","pic":155},{"label":"ракетка","pic":207},{"label":"боксёрские перчатки","pic":208},{"label":"книга","pic":209}]},{"topic":"Занятия","level":"easy","rule":"Школьные принадлежности","reason":"Сосиска не школьная принадлежность.","items":[{"label":"тетрадь","pic":210},{"label":"карандаш","pic":108},{"label":"линейка","pic":172},{"label":"сосиска","pic":211}]},{"topic":"Занятия","level":"medium","rule":"Струнные инструменты","reason":"Барабан не имеет струн. Остальные — струнные инструменты.","items":[{"label":"гитара","pic":202},{"label":"скрипка","pic":212},{"label":"банджо","pic":213},{"label":"барабан","pic":203}]},{"topic":"Занятия","level":"medium","rule":"Инструменты, в которые дуют","reason":"Барабан издаёт звук от ударов, в остальные инструменты дуют.","items":[{"label":"труба","pic":214},{"label":"саксофон","pic":215},{"label":"флейта","pic":216},{"label":"барабан","pic":203}]},{"topic":"Занятия","level":"medium","rule":"Что нужно для письма","reason":"Кисть используют прежде всего для рисования, остальные — для письма.","items":[{"label":"ручка","pic":160},{"label":"карандаш","pic":108},{"label":"мелок","pic":161},{"label":"кисть","pic":175}]},{"topic":"Занятия","level":"medium","rule":"Для игры в мяч","reason":"Краски не нужны для игры с мячом. Остальное используют для игр с мячом.","items":[{"label":"мяч","pic":155},{"label":"ворота","pic":217},{"label":"ракетка","pic":218},{"label":"краски","pic":206}]},{"topic":"Занятия","level":"hard","rule":"Игры, в которых используют ракетку","reason":"Футбол не игра с ракеткой.","items":[{"label":"бадминтон","pic":207},{"label":"теннис","pic":219},{"label":"настольный теннис","pic":218},{"label":"футбол","pic":155}]},{"topic":"Занятия","level":"hard","rule":"Игровые виды спорта с мячом","reason":"Плавание не игра с мячом.","items":[{"label":"футбол","pic":155},{"label":"баскетбол","pic":220},{"label":"волейбол","pic":221},{"label":"плавание","pic":222}]},{"topic":"Занятия","level":"hard","rule":"Ударные и шумовые музыкальные инструменты","reason":"Во флейту дуют, а барабан, бонго и маракасы звучат от удара или встряхивания.","items":[{"label":"барабан","pic":203},{"label":"бонго","pic":223},{"label":"маракасы","pic":224},{"label":"флейта","pic":216}]},{"topic":"Игрушки","level":"easy","rule":"Игрушки","reason":"Ложка не игрушка.","items":[{"label":"плюшевый медведь","pic":225},{"label":"воздушный змей","pic":226},{"label":"йо-йо","pic":227},{"label":"ложка","pic":148}]},{"topic":"Игрушки","level":"easy","rule":"Мячи","reason":"Яблоко — фрукт, а не мяч.","items":[{"label":"футбольный мяч","pic":155},{"label":"баскетбольный мяч","pic":220},{"label":"теннисный мяч","pic":219},{"label":"яблоко","pic":0}]},{"topic":"Игрушки","level":"easy","rule":"Настольные игры","reason":"Сапоги не настольная игра.","items":[{"label":"шахматы","pic":228},{"label":"настольная игра с кубиком","pic":229},{"label":"пазл","pic":230},{"label":"сапоги","pic":194}]},{"topic":"Игрушки","level":"medium","rule":"Игрушки, которые катятся","reason":"Плюшевый мишка обычно не катится. Остальное можно катать.","items":[{"label":"мяч","pic":155},{"label":"йо-йо","pic":227},{"label":"машинка","pic":116},{"label":"плюшевый мишка","pic":225}]},{"topic":"Игрушки","level":"medium","rule":"Игрушки, которые летают","reason":"Кубики не летают во время игры. Остальное запускают в воздух.","items":[{"label":"воздушный змей","pic":226},{"label":"бумеранг","pic":231},{"label":"бумажный самолётик","pic":232},{"label":"кубики","pic":233}]},{"topic":"Признаки","level":"easy","rule":"Геометрические фигуры","reason":"Карандаш — предмет, остальное — фигуры.","items":[{"label":"круг","pic":234},{"label":"треугольник","pic":235},{"label":"квадрат","pic":236},{"label":"карандаш","pic":108}]},{"topic":"Признаки","level":"easy","rule":"Названия цветов","reason":"Стул не цвет. Остальное — цвета.","items":[{"label":"красный","pic":237},{"label":"зелёный","pic":238},{"label":"синий","pic":239},{"label":"стул","pic":145}]},{"topic":"Признаки","level":"easy","rule":"Числа","reason":"Плюс — знак действия, остальное — числа.","items":[{"label":"один","pic":240},{"label":"два","pic":241},{"label":"три","pic":242},{"label":"плюс","pic":243}]},{"topic":"Признаки","level":"easy","rule":"Буквы","reason":"Цифра 5 не буква.","items":[{"label":"буква А","letter":"А"},{"label":"буква О","letter":"О"},{"label":"буква У","letter":"У"},{"label":"пять","pic":244}]},{"topic":"Признаки","level":"medium","rule":"Гласные буквы","reason":"М — согласная буква. А, О, У — гласные.","items":[{"label":"буква А","letter":"А"},{"label":"буква О","letter":"О"},{"label":"буква У","letter":"У"},{"label":"буква М","letter":"М"}]},{"topic":"Признаки","level":"medium","rule":"Согласные буквы","reason":"И — гласная буква. П, Т, К — согласные.","items":[{"label":"буква П","letter":"П"},{"label":"буква Т","letter":"Т"},{"label":"буква К","letter":"К"},{"label":"буква И","letter":"И"}]},{"topic":"Признаки","level":"medium","rule":"Плоские фигуры","reason":"Куб — объёмная фигура, остальные плоские.","items":[{"label":"круг","pic":234},{"label":"треугольник","pic":235},{"label":"квадрат","pic":236},{"label":"куб","pic":229}]},{"topic":"Признаки","level":"medium","rule":"Нечётные числа","reason":"Число 2 — чётное. 1, 3 и 5 — нечётные.","items":[{"label":"один","pic":240},{"label":"три","pic":242},{"label":"пять","pic":244},{"label":"два","pic":241}]},{"topic":"Признаки","level":"hard","rule":"Чётные числа","reason":"7 — нечётное число. 2, 4 и 6 — чётные.","items":[{"label":"два","pic":241},{"label":"четыре","pic":245},{"label":"шесть","pic":246},{"label":"семь","pic":247}]},{"topic":"Признаки","level":"hard","rule":"Объёмные предметы","reason":"Круг — плоская фигура, остальные предметы объёмные.","items":[{"label":"мяч","pic":155},{"label":"кубик","pic":229},{"label":"банка","pic":248},{"label":"круг","pic":234}]},{"topic":"Признаки","level":"hard","rule":"Геометрические фигуры с углами","reason":"У круга нет углов. У остальных фигур углы есть.","items":[{"label":"треугольник","pic":235},{"label":"квадрат","pic":236},{"label":"ромб","pic":249},{"label":"круг","pic":234}]},{"topic":"Признаки","level":"hard","rule":"Однозначные числа","reason":"10 — двузначное число. 3, 5 и 8 — однозначные.","items":[{"label":"три","pic":242},{"label":"пять","pic":244},{"label":"восемь","pic":250},{"label":"десять","pic":251}]},{"topic":"Слова","level":"hard","rule":"Слова начинаются со звука [м]","reason":"Слово «дом» начинается со звука [д], остальные — со звука [м].","items":[{"label":"мышь","pic":252},{"label":"мяч","pic":155},{"label":"морковь","pic":7},{"label":"дом","pic":253}]},{"topic":"Слова","level":"hard","rule":"Слова начинаются со звука [к]","reason":"Слово «рыба» начинается со звука [р], остальные — со звука [к].","items":[{"label":"кот","pic":38},{"label":"кит","pic":64},{"label":"книга","pic":209},{"label":"рыба","pic":254}]},{"topic":"Слова","level":"hard","rule":"Слова начинаются со звука [с]","reason":"Слово «лиса» начинается со звука [л], остальные — со звука [с].","items":[{"label":"слон","pic":255},{"label":"солнце","pic":256},{"label":"собака","pic":39},{"label":"лиса","pic":41}]},{"topic":"Слова","level":"hard","rule":"Слова начинаются со звука [р]","reason":"Слово «шар» начинается со звука [ш], остальные — со звука [р].","items":[{"label":"рыба","pic":254},{"label":"роза","pic":83},{"label":"рука","pic":257},{"label":"шар","pic":258}]},{"topic":"Слова","level":"hard","rule":"Слова начинаются со звука [ш]","reason":"Слово «кот» начинается со звука [к], остальные — со звука [ш].","items":[{"label":"шар","pic":258},{"label":"шуба","pic":259},{"label":"шапка","pic":151},{"label":"кот","pic":38}]},{"topic":"Слова","level":"hard","rule":"Слова начинаются со звука [л]","reason":"Слово «дом» начинается со звука [д], остальные — со звука [л].","items":[{"label":"лиса","pic":41},{"label":"лук","pic":11},{"label":"лодка","pic":142},{"label":"дом","pic":253}]},{"topic":"Слова","level":"hard","rule":"Слова начинаются со звука [п]","reason":"Слово «мяч» начинается со звука [м], остальные — со звука [п].","items":[{"label":"пингвин","pic":70},{"label":"помидор","pic":260},{"label":"петух","pic":261},{"label":"мяч","pic":155}]},{"topic":"Слова","level":"hard","rule":"Слова начинаются со звука [в]","reason":"Слово «кот» начинается со звука [к], остальные — со звука [в].","items":[{"label":"волк","pic":54},{"label":"ведро","pic":154},{"label":"виноград","pic":9},{"label":"кот","pic":38}]},{"topic":"Слова","level":"hard","rule":"Слова начинаются со звука [т]","reason":"Слово «нос» начинается со звука [н], остальные — со звука [т].","items":[{"label":"тигр","pic":74},{"label":"торт","pic":262},{"label":"туча","pic":263},{"label":"нос","pic":264}]},{"topic":"Слова","level":"hard","rule":"Слова начинаются со звука [з]","reason":"Слово «шар» начинается со звука [ш], остальные — со звука [з].","items":[{"label":"заяц","pic":66},{"label":"зонт","pic":265},{"label":"звезда","pic":266},{"label":"шар","pic":258}]}];
+const SPRITE_COLS = 15, SPRITE_ROWS = 18;
+const LEVELS = { easy:'Лёгкий', medium:'Средний', hard:'Сложный', mix:'Вперемешку' };
+const LEVEL_ORDER = ['easy','medium','hard','mix'];
+const CATEGORIES = [...new Set(BANK.map(q=>q.topic))];
+const $ = id => document.getElementById(id);
+const app = $('game');
+const state = {
+  level:'easy', cats:new Set(CATEGORIES), rounds:10,
+  words:true, sound:false, teacher:false,
+  queue:[], index:0, attempts:0, hintUsed:false, answered:false, current:null,
+  stats:{independent:0,assisted:0,alternative:0,discuss:0}, chosen:null
+};
+function esc(value){
+  return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+function shuffle(items){
+  const result = items.slice();
+  for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}
+  return result;
+}
+function pool(){return BANK.filter(q => state.cats.has(q.topic) && (state.level==='mix' || q.level===state.level));}
+function tone(good){
+  if(!state.sound)return;
+  try{
+    const Context=window.AudioContext||window.webkitAudioContext;
+    if(!Context)return;
+    if(!tone.ctx)tone.ctx=new Context();
+    const ctx=tone.ctx;
+    if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+    const oscillator=ctx.createOscillator(), gain=ctx.createGain(), t=ctx.currentTime;
+    oscillator.type='sine';oscillator.frequency.value=good?660:250;
+    gain.gain.setValueAtTime(.055,t);gain.gain.exponentialRampToValueAtTime(.001,t+.16);
+    oscillator.connect(gain);gain.connect(ctx.destination);
+    oscillator.start(t);oscillator.stop(t+.17);
+  }catch(e){}
+}
+function setBack(mode){
+  $('backBtn').onclick=()=>mode==='settings'?location.assign('index.html'):showSettings();
+  $('backBtn').title=mode==='settings'?'Ко всем играм':'К настройкам';
+}
+function showSettings(){
+  setBack('settings');
+  state.queue=[];state.current=null;
+  const counts={};BANK.forEach(q=>counts[q.topic]=(counts[q.topic]||0)+1);
+  app.innerHTML=`
+    <section class="panel">
+      <h2>Настрой занятие</h2>
+      <p class="intro">Найди предмет, который не подходит к трём остальным. После ответа попроси ребёнка объяснить свой выбор. Если у него другое логичное объяснение, это можно обсудить и засчитать.</p>
+      <div class="section"><div class="section-title">Сложность</div><div class="choices" id="levels"></div></div>
+      <div class="section"><div class="topic-head"><div class="section-title">Темы</div><div class="choices"><button class="mini" id="allTopics">Выбрать все</button><button class="mini" id="noTopics">Снять</button></div></div><div class="topic-list" id="topics"></div></div>
+      <div class="section"><div class="section-title">Сколько заданий?</div><div class="choices" id="lengths"></div></div>
+      <div class="section"><div class="section-title">Дополнительно</div><div class="option-list">
+        <label class="option"><input type="checkbox" id="words" ${state.words?'checked':''}><span>Показывать названия под картинками<small>Если ребёнок не читает, взрослый может называть изображения вслух.</small></span></label>
+        <label class="option"><input type="checkbox" id="sounds" ${state.sound?'checked':''}><span>Звуки при ответе</span></label>
+        <label class="option"><input type="checkbox" id="teacher" ${state.teacher?'checked':''}><span>Режим педагога<small>Позволяет засчитать другой обоснованный вариант после обсуждения.</small></span></label>
+      </div></div>
+      <div class="notice">Подсказка доступна в каждом задании. Она не ограничена по времени. «Сложный» уровень включает задания на начальные звуки слов: ребёнку может понадобиться помощь взрослого.</div>
+      <button class="primary start" id="start">Начать</button>
+    </section>`;
+  $('levels').innerHTML=LEVEL_ORDER.map(l=>`<button class="choice ${state.level===l?'selected':''}" data-level="${l}" aria-pressed="${state.level===l}">${LEVELS[l]}</button>`).join('');
+  $('levels').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{state.level=b.dataset.level;updateSettings();}));
+  const topics=$('topics');
+  CATEGORIES.forEach(topic=>{
+    const label=document.createElement('label');label.className='topic';
+    label.innerHTML=`<input type="checkbox" ${state.cats.has(topic)?'checked':''}><span class="topic-name">${esc(topic)}</span><span class="count">${counts[topic]}</span>`;
+    label.querySelector('input').addEventListener('change',e=>{e.target.checked?state.cats.add(topic):state.cats.delete(topic);updateSettings();});
+    topics.append(label);
+  });
+  $('allTopics').onclick=()=>{state.cats=new Set(CATEGORIES);updateSettings();};
+  $('noTopics').onclick=()=>{state.cats.clear();updateSettings();};
+  const lengths=[5,10,15,0];
+  $('lengths').innerHTML=lengths.map(n=>`<button class="choice ${state.rounds===n?'selected':''}" data-length="${n}" aria-pressed="${state.rounds===n}">${n===0?'Все':n}</button>`).join('');
+  $('lengths').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{state.rounds=+b.dataset.length;updateSettings();}));
+  $('words').onchange=e=>state.words=e.target.checked;
+  $('sounds').onchange=e=>state.sound=e.target.checked;
+  $('teacher').onchange=e=>state.teacher=e.target.checked;
+  $('start').onclick=startGame;
+  updateSettings();
+}
+function updateSettings(){
+  const available=pool().length;
+  $('levels').querySelectorAll('button').forEach(b=>{const on=b.dataset.level===state.level;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on));});
+  $('lengths').querySelectorAll('button').forEach(b=>{const on=Number(b.dataset.length)===state.rounds;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on));});
+  $('topics').querySelectorAll('input').forEach((input,i)=>input.checked=state.cats.has(CATEGORIES[i]));
+  $('start').disabled=available===0;
+  const qty=state.rounds===0?available:Math.min(state.rounds,available);
+  $('start').textContent=available===0?'Выбери хотя бы одну подходящую тему':`Начать: ${qty} ${plural(qty,['задание','задания','заданий'])}`;
+}
+function plural(n, forms){return forms[(n%100>=11 && n%100<=14)?2:(n%10===1?0:(n%10>=2&&n%10<=4?1:2))];}
+function planQuestions(){
+  // Чередуем темы. Ребёнок не получает подряд десять похожих рядов.
+  const groups=new Map();
+  shuffle(pool()).forEach(q=>{if(!groups.has(q.topic))groups.set(q.topic,[]);groups.get(q.topic).push(q);});
+  const planned=[];
+  const max=state.rounds===0?pool().length:Math.min(state.rounds,pool().length);
+  let lastTopic=null,lastOdd=null;
+  while(planned.length<max){
+    const choices=shuffle([...groups.entries()].filter(([,list])=>list.length>0));
+    if(!choices.length)break;
+    const selected=choices.find(([topic,list])=>topic!==lastTopic && list.some(q=>q.items[3].label!==lastOdd)) || choices.find(([topic])=>topic!==lastTopic) || choices[0];
+    const [topic,list]=selected;
+    const idx=list.findIndex(q=>q.items[3].label!==lastOdd);
+    const question=list.splice(idx>=0?idx:0,1)[0];
+    planned.push(question);lastTopic=topic;lastOdd=question.items[3].label;
+  }
+  return planned;
+}
+function startGame(){
+  state.queue=planQuestions();if(!state.queue.length)return showSettings();
+  state.index=0;state.stats={independent:0,assisted:0,alternative:0,discuss:0};
+  setBack('round');renderRound();
+}
+function renderRound(){
+  const question=state.queue[state.index];
+  const cards=shuffle(question.items.map((item,i)=>({...item,odd:i===3})));
+  state.current={question,cards,odd:cards.findIndex(item=>item.odd)};
+  state.attempts=0;state.hintUsed=false;state.answered=false;state.chosen=null;
+  const round=state.index+1,total=state.queue.length;
+  app.innerHTML=`
+    <section class="panel">
+      <div class="meta"><span>Задание ${round} из ${total}</span><span>${esc(LEVELS[question.level])} уровень</span></div>
+      <div class="track" aria-label="Прогресс"><div class="fill" style="width:${(state.index/total)*100}%"></div></div>
+      <div class="question">Какая картинка лишняя?</div>
+      <p class="question-sub">Подумай, что объединяет три остальные.</p>
+      <div class="game-grid" id="cards"></div>
+      <div class="status" id="status" role="status" aria-live="polite">Выбери одну картинку.</div>
+      <div class="hint" id="hintBox" hidden></div>
+      <div class="reason" id="reasonBox" hidden></div>
+      <button class="teacher-action" id="acceptOther" hidden>Педагог: засчитать другой обоснованный ответ</button>
+      <div class="controls">
+        <button class="ghost" id="hintBtn"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M9 14c-3.5-3.2-3.9-5.7-2.2-8.3a6 6 0 0 1 10.4 0c1.7 2.6 1.3 5.1-2.2 8.3-.7.7-1 1.5-1 3h-4c0-1.5-.3-2.3-1-3Z"/></svg> Подсказка</button>
+        <button class="ghost" id="reasonBtn" hidden>Показать объяснение</button>
+        <button class="primary" id="nextBtn" disabled>${round===total?'Завершить':'Дальше →'}</button>
+      </div>
+      <div class="subtle">Без таймера. Важен не только выбор, но и объяснение ребёнка.</div>
+    </section>`;
+  const grid=$('cards');
+  cards.forEach((item,i)=>{
+    const button=document.createElement('button');
+    button.className='item'+(!state.words?' nolabel':'');
+    const plain=typeof item.letter==='string';
+    button.setAttribute('aria-label',item.label);
+    if(plain){
+      button.innerHTML=`<span class="picture letter" aria-hidden="true">${esc(item.letter)}</span><span class="word">${esc(item.label)}</span>`;
+    }else{
+      const column=item.pic%SPRITE_COLS, row=Math.floor(item.pic/SPRITE_COLS);
+      const x=SPRITE_COLS===1?0:column/(SPRITE_COLS-1)*100;
+      const y=SPRITE_ROWS===1?0:row/(SPRITE_ROWS-1)*100;
+      button.innerHTML=`<span class="picture illustration" aria-hidden="true" style="background-position:${x}% ${y}%"></span><span class="word">${esc(item.label)}</span>`;
+    }
+    button.onclick=()=>choose(i);
+    grid.append(button);
+  });
+  $('hintBtn').onclick=showHint;
+  $('reasonBtn').onclick=()=>{
+    const box=$('reasonBox');box.hidden=!box.hidden;
+    $('reasonBtn').textContent=box.hidden?'Показать объяснение':'Скрыть объяснение';
+  };
+  $('acceptOther').onclick=acceptOther;
+  $('nextBtn').onclick=()=>{if(state.index+1===state.queue.length)showResult();else{state.index++;renderRound();}};
+}
+function status(message,kind=''){
+  $('status').textContent=message;
+  $('status').className='status'+(kind?' '+kind:'');
+}
+function showHint(){
+  if(state.answered)return;
+  state.hintUsed=true;
+  $('hintBox').textContent='Подумай, какие три картинки подходят к группе «'+state.current.question.rule+'». ';
+  $('hintBox').hidden=false;
+  $('hintBtn').disabled=true;
+  $('hintBtn').textContent='Подсказка открыта';
+}
+function choose(index){
+  if(state.answered)return;
+  state.attempts++;
+  const buttons=[...$('cards').children];
+  buttons.forEach(b=>b.classList.remove('try-again'));
+  const right=index===state.current.odd;
+  state.chosen=index;
+  if(right){
+    buttons[index].classList.add('correct');
+    if(state.attempts===1&&!state.hintUsed)state.stats.independent++;
+    else state.stats.assisted++;
+    tone(true);
+    status('Верно! А теперь расскажи, что общего у остальных трёх.', 'success');
+    finalize();
+  }else{
+    buttons[index].classList.add('try-again');buttons[index].disabled=true;tone(false);
+    if(state.attempts===1){
+      status('Не совпало с задуманным правилом. Попробуй ещё раз. Можно взять подсказку.', 'retry');
+      if(state.teacher)$('acceptOther').hidden=false;
+    }else{
+      state.stats.discuss++;
+      buttons[state.current.odd].classList.add('intended');
+      status('Посмотри на выделенную картинку. Почему именно она не подходит?', 'retry');
+      finalize();
+      if(state.teacher)$('acceptOther').hidden=false;
+    }
+  }
+}
+function finalize(){
+  state.answered=true;
+  [...$('cards').children].forEach(b=>b.disabled=true);
+  $('nextBtn').disabled=false;
+  $('hintBtn').hidden=true;
+  $('hintBox').hidden=true;
+  $('reasonBtn').hidden=false;
+  $('reasonBox').textContent=state.current.question.reason;
+  $('acceptOther').hidden=!(state.teacher && state.attempts>0 && state.chosen!==state.current.odd);
+}
+function acceptOther(){
+  if(!state.teacher || state.chosen===null || state.chosen===state.current.odd)return;
+  // Альтернативный ответ не приравнивается к найденному самостоятельно
+  // задуманному признаку; хранится отдельно в итогах занятия.
+  if(state.answered && state.stats.discuss>0)state.stats.discuss--;
+  state.stats.alternative++;
+  const buttons=[...$('cards').children];
+  buttons.forEach(b=>{b.classList.remove('try-again','intended');b.disabled=true;});
+  buttons[state.chosen].classList.add('correct');
+  status('Другой обоснованный ответ засчитан педагогом. Обсудите оба способа группировки.', 'success');
+  state.answered=true;
+  $('nextBtn').disabled=false;
+  $('hintBtn').hidden=true;
+  $('hintBox').hidden=true;
+  $('reasonBtn').hidden=false;
+  $('reasonBox').textContent=state.current.question.reason;
+  $('acceptOther').hidden=true;
+}
+function showResult(){
+  setBack('round');
+  const s=state.stats,total=state.queue.length;
+  app.innerHTML=`
+    <section class="panel result">
+      <div class="medal" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="66" height="66" viewBox="0 0 24 24" fill="#F7CA64" stroke="#E39D30" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.4 7.1 1-5.1 5 .9 7.1-6-3.3-6.1 3.3 1.1-7.1-5.2-5 7.2-1Z"/></svg></div>
+      <h2>Занятие завершено!</h2>
+      <p class="intro">Разобрали ${total} ${plural(total,['задание','задания','заданий'])}.</p>
+      <div class="stats">
+        <div class="stat"><strong>${s.independent}</strong><span>По задуманному правилу с первой попытки, без подсказки</span></div>
+        <div class="stat"><strong>${s.assisted}</strong><span>По задуманному правилу с подсказкой или повторно</span></div>
+        <div class="stat"><strong>${s.alternative}</strong><span>Другие объяснения, принятые педагогом</span></div>
+        <div class="stat"><strong>${s.discuss}</strong><span>Потребовалось разобрать ответ вместе</span></div>
+      </div>
+      <p class="result-note">Это результаты одного занятия, а не оценка развития ребёнка. Важно замечать, какие признаки он выделяет и может ли объяснить свой выбор.</p>
+      <div class="controls"><button class="primary" id="again">Ещё занятие</button><button class="ghost" id="settingsBtn">Настройки</button></div>
+    </section>`;
+  $('again').onclick=startGame;
+  $('settingsBtn').onclick=showSettings;
+}
+// Защита банка от опечаток при будущем редактировании.
+function validateBank(){
+  for(const [i,q] of BANK.entries()){
+    if(!q.topic || !['easy','medium','hard'].includes(q.level) || !q.rule || !q.reason || !Array.isArray(q.items) || q.items.length!==4 || q.items.some(it=>!it.label || (typeof it.pic!=='number' && !it.letter) || (typeof it.pic==='number' && (it.pic<0 || it.pic>=267)))){
+      throw new Error('Неверный набор «Что лишнее?»: '+(i+1));
+    }
+  }
+}
+validateBank();showSettings();
+</script>
+<script src="../assets/menu-data.js"></script>
+<script src="../assets/menu-drawer.js"></script>
+</body>
+</html>
