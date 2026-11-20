@@ -1,4 +1,4 @@
-name: Build Slogolaz Android APK
+name: Build Slogolaz APK and Android Studio Project
 on:
   push:
     branches:
@@ -48,13 +48,39 @@ jobs:
           name: Slogolaz-v13-APK
           path: dist/Slogolaz-v13.apk
           if-no-files-found: error
-      - name: Publish APK as GitHub Release asset
-        continue-on-error: true
+      - name: Generate Gradle Wrapper and complete Android Studio ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd slogolaz-android
+          gradle wrapper --gradle-version 8.10.2 --distribution-type bin --no-daemon
+          test -s gradlew
+          test -s gradlew.bat
+          test -s gradle/wrapper/gradle-wrapper.jar
+          test -s gradle/wrapper/gradle-wrapper.properties
+          test -s app/src/main/assets/index.html
+          test -s app/src/main/res/mipmap-mdpi/ic_launcher.png
+          test -s app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
+          grep -q 'versionCode 13' app/build.gradle
+          grep -q 'педоф' app/src/main/assets/index.html
+          cd ..
+          mkdir -p export/Slogolaz-AndroidStudio-v13 dist
+          rsync -a \
+            --exclude='.gradle/' --exclude='build/' --exclude='.idea/' \
+            --exclude='local.properties' --exclude='*.iml' \
+            --exclude='__pycache__/' \
+            slogolaz-android/ export/Slogolaz-AndroidStudio-v13/
+          chmod +x export/Slogolaz-AndroidStudio-v13/gradlew
+          (cd export && zip -q -r ../dist/Slogolaz-AndroidStudio-v13.zip Slogolaz-AndroidStudio-v13)
+          unzip -t dist/Slogolaz-AndroidStudio-v13.zip | tail -1
+          sha256sum dist/Slogolaz-AndroidStudio-v13.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Slogolaz-v13-AndroidStudio-Project
+          path: dist/Slogolaz-AndroidStudio-v13.zip
+          if-no-files-found: error
+      - name: Publish Android Studio project without replacing existing APK
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view slogolaz-v13-install >/dev/null 2>&1; then
-            gh release upload slogolaz-v13-install dist/Slogolaz-v13.apk --clobber
-          else
-            gh release create slogolaz-v13-install dist/Slogolaz-v13.apk --target "$GITHUB_SHA" --title "Слоголаз v13 (Android APK)" --notes "Установочный Android APK из Слоголаза v13. Автономная работа без интернета."
-          fi
+          gh release upload slogolaz-v13-install dist/Slogolaz-AndroidStudio-v13.zip --clobber
