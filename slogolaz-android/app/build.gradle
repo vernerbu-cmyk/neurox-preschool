@@ -1,0 +1,16 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'ru.neurox.slogolaz'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'ru.neurox.slogolaz'
+        minSdk 24
+        targetSdk 34
+        versionCode 12
+        versionName '1.12'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
